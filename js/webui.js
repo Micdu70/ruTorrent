@@ -1341,12 +1341,30 @@ var theWebUI =
       		}
    	},
 
+        trtDeselect: function() 
+	{
+		var table = this.getTable("trt");
+		var sr = table.rowSel;
+		for(var k in sr)
+			sr[k] = false;
+		table.refreshRows();
+	},
+
    	createMenu: function(e, id) 
 	{
    		var table = this.getTable("trt");
+		var sr = table.rowSel;
+		var st = 0;
+		for(var k in sr)
+		{
+			if(sr[k] == true)
+				st = st + 1;
+		}
    		theContextMenu.clear();
    		if(table.selCount > 1) 
    		{
+			theContextMenu.add([CMENU_SEL, "> " + st + " torrents", "theWebUI.trtDeselect()"]);
+			theContextMenu.add([CMENU_SEP]);
       			theContextMenu.add([theUILang.Start, "theWebUI.start()"]);
       			theContextMenu.add([theUILang.Pause, "theWebUI.pause()"]);
       			theContextMenu.add([theUILang.Stop, "theWebUI.stop()"]);
@@ -1355,6 +1373,8 @@ var theWebUI =
    		}
    		else 
    		{
+			theContextMenu.add([CMENU_SEL, "> 1 torrent", "theWebUI.trtDeselect()"]);
+			theContextMenu.add([CMENU_SEP]);
    			theContextMenu.add([theUILang.Start, this.isTorrentCommandEnabled("start",id) ? "theWebUI.start()" : null]);
    			theContextMenu.add([theUILang.Pause, (this.isTorrentCommandEnabled("pause",id) || this.isTorrentCommandEnabled("unpause",id)) ? "theWebUI.pause()" : null]);
    			theContextMenu.add([theUILang.Stop, this.isTorrentCommandEnabled("stop",id) ? "theWebUI.stop()" : null]);
