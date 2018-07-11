@@ -73,7 +73,7 @@ if(plugin.canChangeTabs())
 				  	yaxis: 
 				  	{ 
 				  		min: 0,
-	  					tickFormatter: function(n) { return(theConverter.bytes(n)) } 
+	  					tickFormatter: function(n) { return(theConverter.unit(n)) } 
 		  			}
 				});
 				function showTooltip(x, y, contents)
@@ -106,7 +106,7 @@ if(plugin.canChangeTabs())
 								$("#tooltip").remove();
 								var y = item.datapoint[1];
 								showTooltip(item.pageX, item.pageY,
-									item.series.label + " = " + theConverter.bytes(y));
+									item.series.label + " = " + theConverter.unit(y));
 							}
 						}
 						else
