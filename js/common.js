@@ -437,6 +437,46 @@ var theConverter =
 			ret += val + theUILang.time_s;
 		return( ret.substring(0,ret.length-1) );
 	},
+	unit: function(bt, p)
+	{
+		switch(iv(theWebUI.settings["webui.unitformat"]))
+		{
+			case 1:
+			{
+				return( theConverter.bits(bt, p) );
+			}
+			default:
+			{
+				return( theConverter.bytes(bt, p) );
+			}
+		}
+	},
+	bits: function(bt, p)
+	{
+		p = (p == null) ? 1 : p;
+		var ab = new Array(theUILang.bits, theUILang.Kb, theUILang.Mb, theUILang.Gb, theUILang.Tb, theUILang.Pb);
+		var ndxb = 0;
+		if(bt == 0)
+			ndxb = 1;
+		else
+		{
+			bt *= 8;
+			if(bt < 1000)
+			{
+				bt /= 1000;
+				ndxb = 1;
+			}
+			else
+			{
+				while(bt >= 1000)
+				{
+					bt /= 1000;
+					ndxb++;
+				}
+			}
+		}
+		return(this.round(bt, p) + " " + ab[ndxb]);
+	},
 	bytes: function(bt, p)
 	{
 		p = (p == null) ? 1 : p;
@@ -464,7 +504,7 @@ var theConverter =
 	},
 	speed: function(bt)
 	{
-		return((bt>0) ? this.bytes(bt)+ "/" + theUILang.s : "");
+		return((bt>0) ? this.unit(bt)+ "/" + theUILang.s : "");
 	},
 	date: function(dt,timeOnly)
 	{
@@ -541,7 +581,7 @@ var theFormatter =
 				case 4:
 				case 5:
 				case 15:
-					arr[i] = theConverter.bytes(arr[i], 2);
+					arr[i] = theConverter.unit(arr[i], 2);
 					break;
 				case 6:
 					arr[i] = (arr[i] ==- 1) ? "\u221e" : theConverter.round(arr[i] / 1000, 3);
@@ -680,7 +720,7 @@ var theFormatter =
 				case 'downloaded' :
 				case 'uploaded' :
         			case 'peerdownloaded' :
-      					arr[i] = theConverter.bytes(arr[i]);
+      					arr[i] = theConverter.unit(arr[i]);
       					break;
 	      			case 'dl' :
       				case 'ul' :
@@ -750,7 +790,7 @@ var theFormatter =
    			{
       				case 'size' :
       				case 'done' :
-      					arr[i] = theConverter.bytes(arr[i], 2);
+      					arr[i] = theConverter.unit(arr[i], 2);
       					break;
 	      			case 'percent' :
       					arr[i] = arr[i] + "%";

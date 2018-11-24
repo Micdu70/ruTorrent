@@ -310,6 +310,11 @@ function makeContent()
 							"<option value='1'>2011-12-31</option>"+
 							"<option value='2'>12/31/2011</option>"+
 						"</select>"+
+						"<label for=\"webui.unitformat\">"+theUILang.UnitFormat+":</label>&nbsp;"+
+						"<select id=\"webui.unitformat\">"+
+							"<option value='0'>"+theUILang.bytes+"</option>"+
+							"<option value='1'>"+theUILang.bits+"</option>"+
+						"</select>"+
 					"</div>"+
 
 					"<div class=\"op50l\">"+

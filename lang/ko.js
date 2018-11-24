@@ -34,6 +34,7 @@ var theUILang =
  Disabled			: "해제",
  Enabled			: "사용",
  ruTorrent_settings		: "설정",
+ Welcome_message		: "WebUI started.",
  Doesnt_support 		: "ruTorrent는 본 브라우저를 지원하지 않습니다.",
  Name				: "이름",
  Status 			: "상태",
@@ -80,7 +81,13 @@ var theUILang =
  Dont_download			: "다운로드하지 않음",
  Files				: "파일",
  Logger 			: "로그",
- s				: "s", // part of "KB/s"
+ s				: "s", // part of "KB/s" or "Kb/s"
+ bits				: "bits",
+ Kb				: "kb",
+ Mb				: "Mb",
+ Gb				: "Gb",
+ Tb				: "Tb",
+ Pb				: "Pb",
  bytes				: "bytes",
  KB				: "KiB",
  MB				: "MiB",
@@ -109,6 +116,7 @@ var theUILang =
  Ul_speed			: "업로드 속도",
  Wasted 			: "버림",
  Tracker			: "트래커",
+ Tracker_status			: "Tracker - Status",
  Track_URL			: "트래커 URL",
  Track_status			: "트래커 상태",
  Created_on			: "생성 시간",
@@ -199,7 +207,7 @@ var theUILang =
  warnMustBeInSomeHost		: "ruTorrent와 rTorrent가 반드시 같은 호스트에 설치되어야 합니다. 일부 기능을 사용할 수 없습니다.",
  plgShutdown			: "내리기",
  limit				: "제한",
- speedList			: "속도 팝업 목록 (콤마로 구분)",
+ speedList			: "속도 팝업 목록 (콤마로 구분) [KiB/s]",
  ClearButton			: "지우기",
  dontShowTimeouts		: "시간 초과 메시지 무시",
  fullTableRender		: "큰 테이블도 전체 렌더링", /* Full render of large tables */
@@ -230,6 +238,7 @@ var theUILang =
  noTorrentList			: "토렌트 목록을 사용할 수 없습니다, rTorrent와의 연결이 이루어지지 않았습니다.",
  yes				: "예",
  no				: "아니오",
+ UnitFormat			: "Unit to display",
  DateFormat			: "날짜 형식",
  DLStrategy			: "다운로드 전략",
  prioritizeFirst		: "앞부분 조각 먼저",  /* Leading Chunk First */
