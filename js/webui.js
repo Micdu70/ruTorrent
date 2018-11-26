@@ -52,7 +52,7 @@ var theWebUI =
 			container:	"FileList",
 			format:		theFormatter.files,
 			onselect:	function(e,id) { theWebUI.flsSelect(e,id) },
-			ondblclick:	function(obj) 
+			ondblclick:	function(obj)
 			{
 				if(!theWebUI.settings["webui.fls.view"] && (theWebUI.dID!=""))
 				{
@@ -133,10 +133,10 @@ var theWebUI =
 	},
 	settings:
 	{
-		"webui.fls.view":		0, 
-		"webui.show_cats":		1, 
-		"webui.show_dets":		1, 
-		"webui.needmessage":		1, 
+		"webui.fls.view":		0,
+		"webui.show_cats":		1,
+		"webui.show_dets":		1,
+		"webui.needmessage":		1,
 		"webui.reqtimeout":		30000,
 		"webui.confirm_when_deleting":	1,
 		"webui.alternate_color":	0,
@@ -237,7 +237,7 @@ var theWebUI =
 		});
 		var keyEvent = function (e)
 		{
-			switch(e.which) 
+			switch(e.which)
 			{
 		   		case 27 : 				// Esc
 		   		{
@@ -247,9 +247,9 @@ var theWebUI =
 		   		}
 		   		case 79 : 				// ^O
    				{
-					if(e.metaKey && !theDialogManager.isModalState()) 
-   					{	
-      						theWebUI.showAdd();	
+					if(e.metaKey && !theDialogManager.isModalState())
+   					{
+						theWebUI.showAdd();
 						return(false);
       					}
 		   			break;
@@ -257,8 +257,8 @@ var theWebUI =
 				case 80 :                               // ^P
 				{
 					if(e.metaKey && !theDialogManager.isModalState())
-					{	
-      						theWebUI.showSettings();	
+					{
+						theWebUI.showSettings();
 						return(false);
       					}
 		   			break;
@@ -1372,15 +1372,6 @@ var theWebUI =
 		table.refreshRows();
 	},
 
-        trtDeselect: function() 
-	{
-		var table = this.getTable("trt");
-		var sr = table.rowSel;
-		for(var k in sr)
-			sr[k] = false;
-		table.refreshRows();
-	},
-
    	createMenu: function(e, id) 
 	{
    		var table = this.getTable("trt");
@@ -1459,7 +1450,7 @@ var theWebUI =
       			theContextMenu.add([theUILang.Properties]);
    		else 
       			theContextMenu.add([theUILang.Properties, "theWebUI.showProperties('" + id + "')"]);
-   	},
+	},
 
    	perform: function(cmd) 
 	{
