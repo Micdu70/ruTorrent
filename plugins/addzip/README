@@ -1,0 +1,9 @@
+
+AddZip Plugin for rutorrent
+
+This plugin allows you to add a Zip file of torrents using the rutorrent interface.
+
+It adds an "Add Zip" option to the Add Torrent dialog.
+The uploaded zip file is searched recursively and any torrent files are added to rtorrent.
+
+Useful for adding torrents in bulk.

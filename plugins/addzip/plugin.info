@@ -1,0 +1,4 @@
+plugin.description: This plugin allow adding all torrent files from a Zip Archive
+plugin.author: dioltas,Micdu70
+plugin.version: 0.2
+php.extensions.error: zip
