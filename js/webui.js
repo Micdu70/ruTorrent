@@ -1363,7 +1363,7 @@ var theWebUI =
 		}
 	},
 
-        trtDeselect: function() 
+	trtDeselect: function() 
 	{
 		var table = this.getTable("trt");
 		var sr = table.rowSel;

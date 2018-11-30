@@ -476,6 +476,8 @@ theWebUI.createRSSMenu = function(e, id)
 		else
 			theContextMenu.hide();
 	}
+	else
+		theWebUI.createRSSMenuPrim();
 }
 
 theWebUI.rssSelect = function(e, id)
