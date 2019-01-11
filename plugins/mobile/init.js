@@ -8,6 +8,7 @@ plugin.sort = '-addtime'; /* 'name', 'size', 'uploaded', 'downloaded', 'done', '
 plugin.statusFilter = {downloading: 1, completed: 2, label: 4, all: 3, tracker: 5, active: 6, inactive: 7, error: 8};
 plugin.navFilter = undefined;
 plugin.torrents = null;
+plugin.torrentsPrev = null;
 plugin.labels = null;
 plugin.torrent = undefined;
 plugin.lastHref = "";
@@ -19,7 +20,6 @@ plugin.throttleLoaded = false;
 plugin.seedingtimeLoaded = false;
 plugin.getDirLoaded = false;
 plugin.bootstrapJS = false;
-plugin.torrentsPrev = "";
 
 var pageToHash = {
   'torrentsList': '',
@@ -1105,7 +1105,7 @@ plugin.update = function(singleUpdate) {
         tul += iv(v.ul);
         tdl += iv(v.dl);
 
-        if ( ! listHtml.find($('#' + v.hash)).length ) {
+        if ( ! listHtml.find($('#' + v.hash)).length || singleUpdate) {
           listHtmlString +=
           '<tr id="' + v.hash + '" class="torrentBlock status' + statusClass + ' state' + stateClass + ' error' + errorClass + ' label' + plugin.labelIds[v.label] + '" onclick="mobile.showDetails(this.id);"><td>' +
           '<h5>' + v.name + '</h5>' +
@@ -1161,8 +1161,18 @@ plugin.update = function(singleUpdate) {
         plugin.updateTrackerDropdown();
       }
 
-      if ( listHtml ) {
-        listHtml.append(listHtmlString);
+      $.each(plugin.torrentsPrev, function(n, v){
+        if ( ! plugin.torrents[n] ) {
+          listHtml.find($('#' + n)).remove();
+        }
+      });
+
+      if ( listHtmlString ) {
+        if (singleUpdate) {
+          listHtml.html(listHtmlString);
+        } else {
+          listHtml.append(listHtmlString);
+        }
       }
 
       $.each(trackersMap, function(id, ns) {
