@@ -40,7 +40,6 @@ plugins/xshoutbox/
 plugins/donecolor/
 plugins/filebot/
 plugins/hashblock/
-plugins/ratiocolor/
 plugins/repeat/
 plugins/set_title/
 php/commands.lst
