@@ -44,7 +44,7 @@ class PirateBayEngine extends commonEngine
 					{
 						$item = $this->getNewEntry();
 						$item["cat"] = self::removeTags($matches["cat"][$i].' > '.$matches["subcat"][$i]);
-						$item["desc"] = $matches["desc"][$i];
+						$item["desc"] = $url.$matches["desc"][$i];
 						$item["name"] = self::removeTags($matches["name"][$i]);
 						$item["size"] = self::formatSize($matches["size"][$i]);
 						$item["seeds"] = intval(self::removeTags($matches["seeds"][$i]));
