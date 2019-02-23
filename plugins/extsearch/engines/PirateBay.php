@@ -23,7 +23,7 @@ class PirateBayEngine extends commonEngine
 		else
 			$cat = $categories[$cat];
 		$maxPage = 10;
-		for($pg = 0; $pg<=$maxPage; $pg++)
+		for($pg = 0; $pg<$maxPage; $pg++)
 		{
 			$cli = $this->fetch( $url . '/search/' . $what . '/' . $pg . '/7/' . $cat );
 			if(($cli==false) || (strpos($cli->results, "</span>&nbsp;No hits.")!==false))
