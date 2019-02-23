@@ -13,7 +13,7 @@ class PirateBayEngine extends commonEngine
 	public function action($what,$cat,&$ret,$limit,$useGlobalCats)
 	{
 		$added = 0;
-		$url = 'https://piratebay.icu';
+		$url = 'https://thepiratebay.org';
 		if($useGlobalCats)
 			$categories = array( 'all'=>'100,200,300,400,500,600', 'movies'=>'200', 'tv'=>'205', 'music'=>'100', 'games'=>'400', 'anime'=>'0', 'software'=>'300', 'pictures'=>'603', 'books'=>'601' );
 		else
@@ -23,9 +23,9 @@ class PirateBayEngine extends commonEngine
 		else
 			$cat = $categories[$cat];
 		$maxPage = 10;
-		for($pg = 1; $pg<=$maxPage; $pg++)
+		for($pg = 0; $pg<=$maxPage; $pg++)
 		{
-			$cli = $this->fetch( $url . '/search/' . $what . '/' . $pg . '/99/' . $cat );
+			$cli = $this->fetch( $url . '/search/' . $what . '/' . $pg . '/7/' . $cat );
 			if(($cli==false) || (strpos($cli->results, "</span>&nbsp;No hits.")!==false))
 				break;
 			$res = preg_match_all('`<td class="vertTh">.*'.
