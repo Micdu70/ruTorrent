@@ -1177,7 +1177,8 @@ var theBTClientVersion =
 	},
 	azLikeClients2x2:
 	{
-	        "AX" : "BitPump", "BC" : "BitComet", "CD" : "Enhanced CTorrent", "FX" : "Freebox BitTorrent"
+		"AX" : "BitPump", "BC" : "BitComet", "CD" : "Enhanced CTorrent", "FX" : "Freebox BitTorrent",
+		"WD" : "WebTorrent Desktop", "WW" : "WebTorrent"
 	},
 	azLikeClientsSpec:
 	{
