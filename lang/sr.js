@@ -116,7 +116,6 @@ var theUILang =
  Ul_speed			: "Брзина узтовара",
  Wasted 			: "Страћено",
  Tracker			: "Трекер",
- Tracker_status			: "Tracker - Status",
  Track_URL			: "URL трекера",
  Track_status			: "Статус трекера",
  Save_as			: "Снима се као",
