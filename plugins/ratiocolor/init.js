@@ -97,7 +97,7 @@ theWebUI.setRatioColors1 = function(){
 };
 
 theWebUI.setRatioColors2 = function(){
-    $(".stable-List-col-25").each(function(index) {
+    $(".stable-List-col-24").each(function(index) {
         ratio = $(this).children("div")[0].innerHTML
         color = null;
         proc = 0;
@@ -134,7 +134,7 @@ theWebUI.setRatioColors2 = function(){
 };
 
 theWebUI.setRatioColors3 = function(){
-    $(".stable-List-col-26").each(function(index) {
+    $(".stable-List-col-25").each(function(index) {
         ratio = $(this).children("div")[0].innerHTML
         color = null;
         proc = 0;
@@ -171,7 +171,7 @@ theWebUI.setRatioColors3 = function(){
 };
 
 theWebUI.setRatioColors4 = function(){
-    $(".stable-List-col-27").each(function(index) {
+    $(".stable-List-col-26").each(function(index) {
         ratio = $(this).children("div")[0].innerHTML
         color = null;
         proc = 0;
