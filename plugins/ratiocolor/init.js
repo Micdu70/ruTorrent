@@ -30,7 +30,7 @@ colors = [ [255, 0, 0],
 // font
 changeWhat = "font";
 
-// Set colors to all ratio columns
+// Set colors to all ratio columns ('trafic' plugin)
 allRatioColumns = true;
 
 settings = false; // not yet working as it should
@@ -59,7 +59,7 @@ function colorRGB(color){
     return "rgb(" + color[0] + ", " + color[1] + ", " + color[2] + ")";
 }
 
-theWebUI.setRatioColors1 = function(){
+theWebUI.setRatioColors = function(){
     $(".stable-List-col-6").each(function(index) {
         ratio = $(this).children("div")[0].innerHTML
         color = null;
@@ -97,6 +97,7 @@ theWebUI.setRatioColors1 = function(){
 };
 
 theWebUI.setRatioColors2 = function(){
+    /* Ratio/Day */
     $(".stable-List-col-24").each(function(index) {
         ratio = $(this).children("div")[0].innerHTML
         color = null;
@@ -131,9 +132,7 @@ theWebUI.setRatioColors2 = function(){
                 break;
         }
     });
-};
-
-theWebUI.setRatioColors3 = function(){
+    /* Ratio/Week */
     $(".stable-List-col-25").each(function(index) {
         ratio = $(this).children("div")[0].innerHTML
         color = null;
@@ -168,9 +167,7 @@ theWebUI.setRatioColors3 = function(){
                 break;
         }
     });
-};
-
-theWebUI.setRatioColors4 = function(){
+    /* Ratio/Month */
     $(".stable-List-col-26").each(function(index) {
         ratio = $(this).children("div")[0].innerHTML
         color = null;
@@ -225,12 +222,9 @@ plugin.onLangLoaded = function() {
            plugin.tempFunc = theWebUI.tables.trt.obj.refreshRows;
            theWebUI.tables.trt.obj.refreshRows = function(height, fromScroll){
                plugin.tempFunc.call(theWebUI.tables.trt.obj, height, fromScroll);
-               theWebUI.setRatioColors1();
-               if(allRatioColumns){
+               theWebUI.setRatioColors();
+               if(allRatioColumns && thePlugins.isInstalled("trafic"))
                    theWebUI.setRatioColors2();
-                   theWebUI.setRatioColors3();
-                   theWebUI.setRatioColors4();
-               }
             };
             if(settings){
                 rcSettingsDiv = $('<div>').attr("id","st_ratiocolor");
