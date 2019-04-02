@@ -204,6 +204,7 @@ var theUILang =
  doFastResume			: "Не перевіряти хеш під час запуску",
  innerSearch			: "Локальні завантаження",
  removeTeg			: "Видалити тег",
+ removeAllTegs			: "Remove all tags",
  errMustBeInSomeHost		: "Щоб плагін працював коректно, ruTorrent і rTorrent повинні розміщуватися на одному вузлі. Плагін не працюватиме.",
  warnMustBeInSomeHost		: "Щоб плагін працював коректно, ruTorrent і rTorrent повинні розміщуватися на одному вузлі. Деякі функції будуть недоступні.",
  plgShutdown			: "Вивантажити",
