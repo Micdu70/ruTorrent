@@ -42,6 +42,7 @@ plugins/filebot/
 plugins/hashblock/
 plugins/repeat/
 plugins/set_title/
+plugins/theme/themes/DarkBetter
 php/commands.lst
 .idea/*
 *.iml
