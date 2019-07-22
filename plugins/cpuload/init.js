@@ -53,7 +53,7 @@ rLoadGraph.prototype.draw = function( percent )
 				shadowSize: 0,
 			  	yaxis: 
 			  	{ 
-			  		min: 0,
+			  		max: 100,
 					noTicks: true
 		  		}
 			});
