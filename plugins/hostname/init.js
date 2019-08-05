@@ -33,7 +33,8 @@ if (plugin.enabled) {
 		  data : { ip : host_addr},
 		  dataType : "text",
 		  success : resolve_host_name_success,
-		  error: resolve_host_name_failure } );
+		  error: resolve_host_name_failure
+		} );
 	}
 
 	/* Delete oldest item from cache. */
@@ -94,7 +95,7 @@ if (plugin.enabled) {
 		[found, index] = cache_find(host_addr);
 		if (found == 1) {
 			/* Update existing. */
-			/* g_cache_host_addr[index] = host_addr; Allready set. */
+			/* g_cache_host_addr[index] = host_addr; Already set. */
 			g_cache_host_name[index] = host_name;
 			g_cache_host_time[index] = tTime.getTime();
 			return (index);
@@ -148,7 +149,7 @@ if (plugin.enabled) {
 	plugin.config = theWebUI.config;
 	theWebUI.config = function(data) {
 		if (plugin.canChangeColumns()) {
-			this.tables.prs.columns.unshift({
+			this.tables.prs.columns.push({
 			  text : 'hostname',
 			  width : '80px',
 			  id: 'hostname',
@@ -161,11 +162,9 @@ if (plugin.enabled) {
 	plugin.getpeersResponse = rTorrentStub.prototype.getpeersResponse;
 	rTorrentStub.prototype.getpeersResponse = function(xml) {
 		var peers = plugin.getpeersResponse.call(this, xml);
-		if (plugin.enabled) {
-			$.each(peers, function(id, peer) {
-				peer.hostname = cache_get_host_name(peer.ip);
-			});
-		}
+		$.each(peers, function(id, peer) {
+			peer.hostname = cache_get_host_name(peer.ip);
+		});
 		return (peers);
 	}
 

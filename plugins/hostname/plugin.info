@@ -1,5 +1,5 @@
 plugin.description: Resolve hostname for peers by IP.
-plugin.author: Rozhuk Ivan
+plugin.author: Rozhuk Ivan,Micdu70
 plugin.runlevel: 15
 plugin.version: 3.9
 rtorrent.remote: error
