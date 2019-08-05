@@ -2,7 +2,7 @@
 	// configuration parameters
 
 	$retrieveCountry = true;
-	$retrieveHost = true;
+	$retrieveHost = false;
 	$retrieveComments = true;
 
 	// For retrieve hosts
