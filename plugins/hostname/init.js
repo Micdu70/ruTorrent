@@ -12,7 +12,7 @@ if (plugin.enabled) {
 	function resolve_host_name_success(data) {
 		var res = data.split("<|>");
 		cache_add(res[0], res[1]);
-		console.log("Resolved host name for address:", res[0], "is", res[1]);
+		//console.log("Resolved host name for address:", res[0], "is", res[1]);
 	}
 
 	function resolve_host_name_failure(XMLHttpRequest, textStatus, errorThrown) {
