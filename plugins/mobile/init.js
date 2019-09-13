@@ -233,8 +233,10 @@ plugin.filter = function(f, self, l) {
   if ($('#torrentsList').is(':visible')) {
     $('#torrentsLabels').css('width', '');
     $('#torrentsTrackers').css('width', '');
+    $('#torrentsStatus').css('width', '');
     $('#torrentsLabels > a > span').css('width', '');
     $('#torrentsTrackers > a > span').css('width', '');
+    $('#torrentsStatus > a > span').css('width', '');
   }
   if (f == this.statusFilter.label) {
     $('.torrentBlock').css('display', 'none');
@@ -248,7 +250,7 @@ plugin.filter = function(f, self, l) {
     $('#torrentsList ul li').removeClass('active');
     $('#torrentsLabels').addClass('active');
     var totalWidth = $('#torrentsList .nav').width();
-    var combinedWidth = $('#torrentsStatus').outerWidth(true) + $('#torrentsTrackers').outerWidth(true) + $('#sort').outerWidth(true) + 1;
+    var combinedWidth = $('#torrentsStatus').outerWidth(true) + $('#torrentsTrackers').outerWidth(true) + $('#sort').outerWidth(true) + $('#refresh').outerWidth(true) + 1;
     var selfWidth = $('#torrentsLabels').width();
     var selfExcess = $('#torrentsLabels').outerWidth(true) - selfWidth;
     var diffWidth = totalWidth - combinedWidth - selfExcess;
@@ -267,7 +269,7 @@ plugin.filter = function(f, self, l) {
     $('#torrentsList ul li').removeClass('active');
     $('#torrentsTrackers').addClass('active');
     var totalWidth = $('#torrentsList .nav').width();
-    var combinedWidth = $('#torrentsStatus').outerWidth(true) + $('#torrentsLabels').outerWidth(true) + $('#sort').outerWidth(true) + 1;
+    var combinedWidth = $('#torrentsStatus').outerWidth(true) + $('#torrentsLabels').outerWidth(true) + $('#sort').outerWidth(true) + $('#refresh').outerWidth(true) + 1;
     var selfWidth = $('#torrentsTrackers').width();
     var selfExcess = $('#torrentsTrackers').outerWidth(true) - selfWidth;
     var diffWidth = totalWidth - combinedWidth - selfExcess;
@@ -277,41 +279,100 @@ plugin.filter = function(f, self, l) {
       $('#torrentsTrackers > a > span').width(spanWidth);
     }
   } else {
+    $('#torrentsLabels > a > span').html(theUILang.Labels);
+    $('#torrentsTrackers > a > span').html(theUILang.Trackers);
+    $('#torrentsList ul li').removeClass('active');
+    $('#torrentsStatus').addClass('active');
     if (f == this.statusFilter.all) {
       $('.statusDownloading').css({display: ''});
       $('.statusCompleted').css({display: ''});
       $('#torrentsStatus > a > span').html(theUILang.All);
+      var totalWidth = $('#torrentsList .nav').width();
+      var combinedWidth = $('#torrentsTrackers').outerWidth(true) + $('#torrentsLabels').outerWidth(true) + $('#sort').outerWidth(true) + $('#refresh').outerWidth(true) + 1;
+      var selfWidth = $('#torrentsStatus').width();
+      var selfExcess = $('#torrentsStatus').outerWidth(true) - selfWidth;
+      var diffWidth = totalWidth - combinedWidth - selfExcess;
+      if (diffWidth < selfWidth && selfWidth > 0 && diffWidth > 0) {
+        $('#torrentsStatus').width(diffWidth);
+        var spanWidth = $('#torrentsStatus > a').width() - $('#torrentsStatus > a > b').outerWidth(true);
+        $('#torrentsStatus > a > span').width(spanWidth);
+      }
     }
     if (f == this.statusFilter.downloading) {
       $('.statusDownloading').css({display: ''});
       $('.statusCompleted').css({display: 'none'});
       $('#torrentsStatus > a > span').html(theUILang.Downloading);
+      var totalWidth = $('#torrentsList .nav').width();
+      var combinedWidth = $('#torrentsTrackers').outerWidth(true) + $('#torrentsLabels').outerWidth(true) + $('#sort').outerWidth(true) + $('#refresh').outerWidth(true) + 1;
+      var selfWidth = $('#torrentsStatus').width();
+      var selfExcess = $('#torrentsStatus').outerWidth(true) - selfWidth;
+      var diffWidth = totalWidth - combinedWidth - selfExcess;
+      if (diffWidth < selfWidth && selfWidth > 0 && diffWidth > 0) {
+        $('#torrentsStatus').width(diffWidth);
+        var spanWidth = $('#torrentsStatus > a').width() - $('#torrentsStatus > a > b').outerWidth(true);
+        $('#torrentsStatus > a > span').width(spanWidth);
+      }
     }
     if (f == this.statusFilter.completed) {
       $('.statusDownloading').css({display: 'none'});
       $('.statusCompleted').css({display: ''});
       $('#torrentsStatus > a > span').html(theUILang.Finished);
+      var totalWidth = $('#torrentsList .nav').width();
+      var combinedWidth = $('#torrentsTrackers').outerWidth(true) + $('#torrentsLabels').outerWidth(true) + $('#sort').outerWidth(true) + $('#refresh').outerWidth(true) + 1;
+      var selfWidth = $('#torrentsStatus').width();
+      var selfExcess = $('#torrentsStatus').outerWidth(true) - selfWidth;
+      var diffWidth = totalWidth - combinedWidth - selfExcess;
+      if (diffWidth < selfWidth && selfWidth > 0 && diffWidth > 0) {
+        $('#torrentsStatus').width(diffWidth);
+        var spanWidth = $('#torrentsStatus > a').width() - $('#torrentsStatus > a > b').outerWidth(true);
+        $('#torrentsStatus > a > span').width(spanWidth);
+      }
     }
     if (f == this.statusFilter.active) {
       $('.stateActive').css({display: ''});
       $('.stateInactive').css({display: 'none'});
       $('#torrentsStatus > a > span').html(theUILang.Active);
+      var totalWidth = $('#torrentsList .nav').width();
+      var combinedWidth = $('#torrentsTrackers').outerWidth(true) + $('#torrentsLabels').outerWidth(true) + $('#sort').outerWidth(true) + $('#refresh').outerWidth(true) + 1;
+      var selfWidth = $('#torrentsStatus').width();
+      var selfExcess = $('#torrentsStatus').outerWidth(true) - selfWidth;
+      var diffWidth = totalWidth - combinedWidth - selfExcess;
+      if (diffWidth < selfWidth && selfWidth > 0 && diffWidth > 0) {
+        $('#torrentsStatus').width(diffWidth);
+        var spanWidth = $('#torrentsStatus > a').width() - $('#torrentsStatus > a > b').outerWidth(true);
+        $('#torrentsStatus > a > span').width(spanWidth);
+      }
     }
     if (f == this.statusFilter.inactive) {
       $('.stateActive').css({display: 'none'});
       $('.stateInactive').css({display: ''});
       $('#torrentsStatus > a > span').html(theUILang.Inactive);
+      var totalWidth = $('#torrentsList .nav').width();
+      var combinedWidth = $('#torrentsTrackers').outerWidth(true) + $('#torrentsLabels').outerWidth(true) + $('#sort').outerWidth(true) + $('#refresh').outerWidth(true) + 1;
+      var selfWidth = $('#torrentsStatus').width();
+      var selfExcess = $('#torrentsStatus').outerWidth(true) - selfWidth;
+      var diffWidth = totalWidth - combinedWidth - selfExcess;
+      if (diffWidth < selfWidth && selfWidth > 0 && diffWidth > 0) {
+        $('#torrentsStatus').width(diffWidth);
+        var spanWidth = $('#torrentsStatus > a').width() - $('#torrentsStatus > a > b').outerWidth(true);
+        $('#torrentsStatus > a > span').width(spanWidth);
+      }
     }
     if (f == this.statusFilter.error) {
       $('.errorNo').css({display: 'none'});
       $('.errorYes').css({display: ''});
       $('#torrentsStatus > a > span').html(theUILang.Error);
+      var totalWidth = $('#torrentsList .nav').width();
+      var combinedWidth = $('#torrentsTrackers').outerWidth(true) + $('#torrentsLabels').outerWidth(true) + $('#sort').outerWidth(true) + $('#refresh').outerWidth(true) + 1;
+      var selfWidth = $('#torrentsStatus').width();
+      var selfExcess = $('#torrentsStatus').outerWidth(true) - selfWidth;
+      var diffWidth = totalWidth - combinedWidth - selfExcess;
+      if (diffWidth < selfWidth && selfWidth > 0 && diffWidth > 0) {
+        $('#torrentsStatus').width(diffWidth);
+        var spanWidth = $('#torrentsStatus > a').width() - $('#torrentsStatus > a > b').outerWidth(true);
+        $('#torrentsStatus > a > span').width(spanWidth);
+      }
     }
-
-    $('#torrentsLabels > a > span').html(theUILang.Labels);
-    $('#torrentsTrackers > a > span').html(theUILang.Trackers);
-    $('#torrentsList ul li').removeClass('active');
-    $('#torrentsStatus').addClass('active');
   }
   this.currFilter = f;
 };
@@ -327,7 +388,7 @@ plugin.showSettings = function() {
       var spd = speeds[i] * 1024;
       $('#dlLimit').append('<option' + (spd == total.rateDL ? ' selected' : '') + ' value="' + spd + '">' + theConverter.speed(spd) + '</option>');
     };
-    $('#dlLimit').append('<option' + ((total.rateDL <= 0 || total.rateDL >= 100*1024*1024) ? ' selected' : '') + ' value="' + 100 * 1024 * 1024 + '">' + theUILang.unlimited + '</option>');
+    $('#dlLimit').append('<option' + ((total.rateDL <= 0 || total.rateDL >= 327625*1024) ? ' selected' : '') + ' value="' + 327625*1024 + '">' + theUILang.unlimited + '</option>');
 
     speeds=theWebUI.settings["webui.speedlistul"].split(",");
 
@@ -335,7 +396,7 @@ plugin.showSettings = function() {
       var spd = speeds[i] * 1024;
       $('#ulLimit').append('<option' + (spd == total.rateUL ? ' selected' : '') + ' value="' + spd + '">' + theConverter.speed(spd) + '</option>');
     };
-    $('#ulLimit').append('<option' + ((total.rateUL <= 0 || total.rateUL >= 100*1024*1024) ? ' selected' : '') + ' value="' + 100 * 1024 * 1024 + '">' + theUILang.unlimited + '</option>');
+    $('#ulLimit').append('<option' + ((total.rateUL <= 0 || total.rateUL >= 327625*1024) ? ' selected' : '') + ' value="' + 327625*1024 + '">' + theUILang.unlimited + '</option>');
 
     plugin.showPage('globalSettings');
   });
@@ -373,6 +434,10 @@ plugin.showSort = function() {
   $('#sortOption option[value=' + sort + ']').prop('selected', true);
   
   plugin.showPage('torrentSort');
+};
+
+plugin.refresh = function() {
+  window.location.reload(true);
 };
 
 plugin.setDLLimit = function() {
