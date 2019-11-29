@@ -283,5 +283,6 @@ var theUILang =
  Save_path			: "경로 저장",
  registerMagnet			: "시작 시 마그넷 프로토콜 연결 프로그램으로 등록 시도",
  linkTorTorrentRestored		: "rTorrent에 연결되었습니다.",
- removeAllTegs			: "Remove all tags"
+ removeAllTegs			: "Remove all tags",
+ Displaying			: "Torrent(s)"
 };

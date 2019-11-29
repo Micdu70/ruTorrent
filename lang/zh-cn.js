@@ -285,5 +285,6 @@ var theUILang =
  Save_path			: "保存路径",
  registerMagnet			: "尝试在启动时注册磁力链协议",
  linkTorTorrentRestored		: "Connection to rTorrent established.",
- removeAllTegs			: "Remove all tags"
+ removeAllTegs			: "Remove all tags",
+ Displaying			: "Torrent(s)"
 };

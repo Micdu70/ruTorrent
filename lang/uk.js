@@ -285,5 +285,6 @@ var theUILang =
  Save_path			: "Збережено у",
  registerMagnet			: "Реєструвати протокол magnet під час запуску",
  linkTorTorrentRestored		: "Зʼєднання з rTorrent відновлене.",
- removeAllTegs			: "Видалити всі теги"
+ removeAllTegs			: "Видалити всі теги",
+ Displaying			: "Torrent(s)"
 };

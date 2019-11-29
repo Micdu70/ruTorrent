@@ -285,5 +285,6 @@ var theUILang =
  Save_path			: "Chemin",
  registerMagnet			: "Essayer d'enregistrer la gestion du protocole magnet au démarrage",
  linkTorTorrentRestored		: "Connexion à rTorrent établie.",
- removeAllTegs			: "Retirer tous les tags"
+ removeAllTegs			: "Retirer tous les tags",
+ Displaying			: "Torrent(s)"
 };
