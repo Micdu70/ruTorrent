@@ -6,7 +6,7 @@ theSearchEngines.filterBySearch = function(sId)
 	var table = theWebUI.getTable("trt");
 	if(table.getValueById(sId, "name").toLowerCase().indexOf($("#query").val().toLowerCase()) >- 1)
 		table.unhideRow(sId);
-	else 
+	else
 		table.hideRow(sId);
 }
 
@@ -16,13 +16,13 @@ theSearchEngines.instantSearch = function()
 		return;
 	if(theSearchEngines.instantSearchTimer)
 		clearTimeout(theSearchEngines.instantSearchTimer);
-	
+
 	theSearchEngines.instantSearchTimer = setTimeout("theSearchEngines.doInstantSearch()", theSearchEngines.instantSearchDelay);
 }
 
 theSearchEngines.doInstantSearch = function()
 {
-	theWebUI.switchLabel($("#-_-_-all-_-_-")[0]);
+	theWebUI.resetLabels();
 	var table = theWebUI.getTable("trt");
 	table.scrollTo(0);
 	for(var k in theWebUI.torrents)
@@ -42,4 +42,3 @@ plugin.onRemove = function()
 }
 
 $("#query").keydown(theSearchEngines.instantSearch);
-	

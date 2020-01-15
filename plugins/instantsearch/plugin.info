@@ -1,5 +1,5 @@
-description: searchresults appears instantly
-author: Gyran
-version: 1.0
+description: This plugin adds instant search results functionality.
+author: Gyran,Micdu70
+version: 1.1
 remote: ok
 need_rtorrent: 0
