@@ -27,8 +27,6 @@ if(plugin.canChangeTabs())
 		var tabsElm = document.getElementById("tabbar").children;
 		for (var i=0; i<tabsElm.length; i++)
 		{
-			if(i==0 && tabsElm[i]=="tab_gcont")
-				continue;
 			idTabs.push(tabsElm[i].id);
 		}
 
