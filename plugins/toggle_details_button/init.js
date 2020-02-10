@@ -4,7 +4,7 @@ if(plugin.canChangeTabs())
 	{
 		for (var i=0; i<id.length; i++)
 		{
-			if(i!=0)
+			if([id[i]]!="tab_toggleDetailsButton")
 				$("#"+[id[i]]).hide();
 		}
 	}
@@ -13,7 +13,7 @@ if(plugin.canChangeTabs())
 	{
 		for (var i=0; i<id.length; i++)
 		{
-			if(i!=0)
+			if([id[i]]!="tab_toggleDetailsButton")
 				$("#"+[id[i]]).show();
 		}
 	}
@@ -27,10 +27,14 @@ if(plugin.canChangeTabs())
 		var tabsElm = document.getElementById("tabbar").children;
 		for (var i=0; i<tabsElm.length; i++)
 		{
+			if(i==0 && tabsElm[i]=="tab_gcont")
+				continue;
 			idTabs.push(tabsElm[i].id);
 		}
 
 		h = theWebUI.settings["webui.vsplit"];
+
+		$("#tdetails").show();
 
 		if(theWebUI.settings["webui.show_dets"])
 		{
@@ -44,7 +48,6 @@ if(plugin.canChangeTabs())
 			if(init)
 			{
 				theWebUI.settings["webui.vsplit"] = 1-($("#StatusBar").height()/wh);
-				$("#tdetails").show();
 				$("#tdcont").hide();
 				theWebUI.hideTabs(idTabs);
 			}
@@ -69,10 +72,10 @@ if(plugin.canChangeTabs())
 
 		theWebUI.save();
 
-		plugin.checkDetails();
+		plugin.addToggleDetailsButton();
 	}
 
-	theWebUI.addToggleDetailsButton = function(id,name,idBefore,init)
+	theWebUI.addToggleDetailsButton = function(id,name,idBefore)
 	{
 		var newLbl = document.createElement("li");
 		newLbl.id = "tab_"+id;
@@ -80,11 +83,6 @@ if(plugin.canChangeTabs())
 		newLbl.innerHTML = "<a href=\"javascript://void();\" onmousedown=\"theWebUI.toggleDetailsButton();\" onfocus=\"this.blur();\">" + name + "</a>";
 		var beforeLbl = $$("tab_"+idBefore);
 		beforeLbl.parentNode.insertBefore(newLbl,beforeLbl);
-		if(init && !theWebUI.settings["webui.show_dets"])
-		{
-			theWebUI.toggleDetailsButton(true);
-			setTimeout(theWebUI.fixDisplay,1000);
-		}
 	}
 
 	theWebUI.newKeyEvent = function()
@@ -151,21 +149,23 @@ if(plugin.canChangeTabs())
 		$(document).keydown(keyEvent);
 	}
 
-	theWebUI.fixDisplay = function()
+	plugin.addToggleDetailsButton = function()
 	{
-		var wh = $(window).height();
-		var dh = $("#maincont").height()+$("#t").height();
-		if(dh>wh)
-			theWebUI.toggleDetailsButton(true);
+		this.removePageFromTabs("toggleDetailsButton");
+		if(!theWebUI.settings["webui.show_dets"])
+			theWebUI.addToggleDetailsButton("toggleDetailsButton","▲","gcont");
+		else
+			theWebUI.addToggleDetailsButton("toggleDetailsButton","▼","gcont");
 	}
 
 	plugin.checkDetails = function(init)
 	{
-		plugin.removePageFromTabs("toggleDetailsButton");
-		if(!theWebUI.settings["webui.show_dets"])
-			theWebUI.addToggleDetailsButton("toggleDetailsButton","▲","gcont",init);
-		else
-			theWebUI.addToggleDetailsButton("toggleDetailsButton","▼","gcont",init);
+		if(init && !theWebUI.settings["webui.show_dets"])
+		{
+			setTimeout('theWebUI.toggleDetailsButton(true)',1000);
+			return;
+		}
+		this.addToggleDetailsButton();
 	}
 
 	plugin.allDone = function()
@@ -176,7 +176,7 @@ if(plugin.canChangeTabs())
 		if(!browser.isOpera)
 			theWebUI.newKeyEvent();
 
-		plugin.checkDetails(true);
+		this.checkDetails(true);
 	}
 
 	plugin.onRemove = function()
@@ -186,7 +186,7 @@ if(plugin.canChangeTabs())
 			$(document).off('keydown');
 			theWebUI.assignEvents();
 		}
-		plugin.removePageFromTabs("toggleDetailsButton");
+		this.removePageFromTabs("toggleDetailsButton");
 	}
 
 	plugin.config = theWebUI.config;
