@@ -190,6 +190,19 @@ if(plugin.canChangeTabs())
 	plugin.config = theWebUI.config;
 	theWebUI.config = function(data)
 	{
+		plugin.trtOndblclick = this.tables.trt.ondblclick;
+		theWebUI.tables.trt.ondblclick = function(obj)
+		{
+			if(plugin.enabled)
+			{
+				if(!theWebUI.settings["webui.show_dets"])
+					theWebUI.toggleDetailsButton();
+				theWebUI.showDetails(obj.id);
+				return(plugin.trtOndblclick(obj));
+			}
+			theWebUI.showDetails(obj.id);
+			return(false);
+		};
 		plugin.config.call(this,data);
 		thePlugins.waitLoad( "thePlugins.get('toggle_details_button').allDone" );
 	}
