@@ -34,34 +34,25 @@ if(plugin.canChangeTabs())
 
 		$("#tdetails").show();
 
-		if(theWebUI.settings["webui.show_dets"])
+		if(init || theWebUI.settings["webui.show_dets"])
 		{
+			if(init)
+				theWebUI.settings["webui.show_dets"] = true;
 			theWebUI.settings["webui.vsplit"] = 1-($("#StatusBar").height()/wh);
 			$("#tdcont").hide();
 			theWebUI.hideTabs(idTabs);
 		}
 		else
 		{
+			check = true;
 			theWebUI.settings["webui.show_dets"] = true;
-			if(init)
-			{
-				theWebUI.settings["webui.vsplit"] = 1-($("#StatusBar").height()/wh);
-				$("#tdcont").hide();
-				theWebUI.hideTabs(idTabs);
-			}
-			else
-			{
-				check = true;
-				theWebUI.showTabs(idTabs);
-				theWebUI.settings["webui.vsplit"] = h;
-				$("#tdcont").show();
-			}
+			theWebUI.showTabs(idTabs);
+			$("#tdcont").show();
 		}
 
 		theWebUI.resize();
 
-		if(theWebUI.settings["webui.show_dets"])
-			theWebUI.settings["webui.vsplit"] = h;
+		theWebUI.settings["webui.vsplit"] = h;
 
 		if(check)
 			theWebUI.settings["webui.show_dets"] = false;
@@ -149,21 +140,11 @@ if(plugin.canChangeTabs())
 
 	plugin.addToggleDetailsButton = function()
 	{
-		this.removePageFromTabs("toggleDetailsButton");
+		$("#tab_toggleDetailsButton").remove();
 		if(!theWebUI.settings["webui.show_dets"])
 			theWebUI.addToggleDetailsButton("toggleDetailsButton","▲","gcont");
 		else
 			theWebUI.addToggleDetailsButton("toggleDetailsButton","▼","gcont");
-	}
-
-	plugin.checkDetails = function(init)
-	{
-		if(init && !theWebUI.settings["webui.show_dets"])
-		{
-			setTimeout('theWebUI.toggleDetailsButton(true)',1000);
-			return;
-		}
-		this.addToggleDetailsButton();
 	}
 
 	plugin.allDone = function()
@@ -174,17 +155,20 @@ if(plugin.canChangeTabs())
 		if(!browser.isOpera)
 			theWebUI.newKeyEvent();
 
-		this.checkDetails(true);
+		if(!theWebUI.settings["webui.show_dets"])
+		{
+			setTimeout('theWebUI.toggleDetailsButton(true)',500);
+			return;
+		}
+		this.addToggleDetailsButton();
 	}
 
 	plugin.onRemove = function()
 	{
 		if(!browser.isOpera)
-		{
 			$(document).off('keydown');
-			theWebUI.assignEvents();
-		}
-		this.removePageFromTabs("toggleDetailsButton");
+		theWebUI.assignEvents();
+		$("#tab_toggleDetailsButton").remove();
 	}
 
 	plugin.config = theWebUI.config;
