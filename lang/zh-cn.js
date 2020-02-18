@@ -36,12 +36,8 @@ var theUILang =
  Disabled			: "禁用",
  Enabled			: "启用",
  ruTorrent_settings		: "设置",
-<<<<<<< HEAD
  Welcome_message		: "WebUI started.",
- Doesnt_support			: "这个 ruTorrent 不支持你使用的浏览器.",
-=======
  Doesnt_support			: "ruTorrent 不支持你使用的浏览器.",
->>>>>>> d693d1c0... Merge pull request #2002 from mewsf/mewsf-patch-1
  Name				: "名称",
  Status				: "状态",
  Size				: "大小",
@@ -288,13 +284,7 @@ var theUILang =
  PeerDownloaded			: "Peer 已下载",
  Save_path			: "保存路径",
  registerMagnet			: "尝试在启动时注册磁力链协议",
-<<<<<<< HEAD
- linkTorTorrentRestored		: "Connection to rTorrent established.",
- removeAllTegs			: "Remove all tags",
- Displaying			: "Torrent(s)"
-=======
  linkTorTorrentRestored		: "与 rTorrent 的连接已建立.",
  removeAllTegs			: "删除所有标签",
  Torrents			: "Torrent(s)"
->>>>>>> d693d1c0... Merge pull request #2002 from mewsf/mewsf-patch-1
 };
