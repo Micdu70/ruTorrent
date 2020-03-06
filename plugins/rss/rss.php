@@ -973,6 +973,8 @@ class rRSSManager
 				if(     !$this->history->wasLoaded($href) &&
 					$filter->checkItem($href, $item) )
 				{
+					self::log("Filter [".$filter->name."] of channel [".$rss->url."] was applied for [$href]");
+
 				        $this->history->applyFilter( $filter->no );
 
 					rTorrentSettings::get()->pushEvent( "RSSAutoLoad", array( "rss"=>&$rss, "href"=>&$href, "item"=>&$item, "filter"=>&$filter ) );
@@ -1277,34 +1279,42 @@ class rRSSManager
 	}
 	public function getTorrents( $rss, $url, $isStart, $isAddPath, $directory, $label, $isFast, $isRandomHash, $throttle, $ratio, $needFlush = true )
 	{
-		$thash = 'Failed';
-		$ret = $rss->getTorrent( $url, $rss );
-		$ret = new Torrent($ret);
-		if($ret!==false)
+		if(!self::isDryRun())
 		{
-			$addition = array();
-			if(!empty($throttle))
-				$addition[] = getCmd("d.set_throttle_name=").$throttle;
-			if(!empty($ratio))
-				$addition[] = getCmd("view.set_visible=").$ratio;
-			if(($isRandomHash) && (strpos($url,"magnet:")===false))
-				$ret->info['unique'] = uniqid("rutorrent-",true);
-			global $saveUploadedTorrents;
-			$thash = (strpos($url,"magnet:")===0) ?
-				rTorrent::sendMagnet($url, $isStart, $isAddPath, $directory, $label, $addition) :
-				rTorrent::sendTorrent($ret, $isStart, $isAddPath, $directory, $label, $saveUploadedTorrents, $isFast, true, $addition);
-			if($thash===false)
+			self::log("Load torrent [$url]");
+			$thash = 'Failed';
+			$ret = $rss->getTorrent( $url, $rss );
+			$ret = new Torrent($ret);
+			if($ret!==false)
 			{
-				$thash = 'Failed';
-				@unlink($ret);
-				$ret = false;
+				$addition = array();
+				if(!empty($throttle))
+					$addition[] = getCmd("d.set_throttle_name=").$throttle;
+				if(!empty($ratio))
+					$addition[] = getCmd("view.set_visible=").$ratio;
+				if(($isRandomHash) && (strpos($url,"magnet:")===false))
+					$ret->info['unique'] = uniqid("rutorrent-",true);
+				global $saveUploadedTorrents;
+				$thash = (strpos($url,"magnet:")===0) ?
+					rTorrent::sendMagnet($url, $isStart, $isAddPath, $directory, $label, $addition) :
+					rTorrent::sendTorrent($ret, $isStart, $isAddPath, $directory, $label, $saveUploadedTorrents, $isFast, true, $addition);
+				if($thash===false)
+				{
+					$thash = 'Failed';
+					@unlink($ret);
+					$ret = false;
+				}
 			}
+			if($ret===false)
+				$this->rssList->addError( "theUILang.rssCantLoadTorrent", $url );
+			$this->history->add($url,$thash,$rss->getItemTimestamp( $url ));
+			if($needFlush)
+				$this->saveHistory();
 		}
-		if($ret===false)
-			$this->rssList->addError( "theUILang.rssCantLoadTorrent", $url );
-		$this->history->add($url,$thash,$rss->getItemTimestamp( $url ));
-		if($needFlush)
-			$this->saveHistory();
+		else
+		{
+			self::log("Load torrent [$url] (dry-run mode, no real action applied)");
+		}
 	}
 	public function saveHistory()
 	{
@@ -1360,5 +1370,20 @@ class rRSSManager
 	{
 		$this->history->clearFilterTime( $filterNo );
 		$this->saveHistory();
+	}
+
+	protected static function log( $msg )
+	{
+		global $rss_debug_enabled;
+		if( $rss_debug_enabled ) 
+		{
+			toLog("RSS: $msg");
+		}
+	}
+
+	protected static function isDryRun()
+	{
+		global $rss_debug_enabled;
+		return( $rss_debug_enabled === 'dry-run' );
 	}
 }
