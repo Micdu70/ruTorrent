@@ -1866,6 +1866,10 @@ var theWebUI =
 			this.resetLabels();
 			this.switchLabel(el[0]);
 		}
+		else
+		{
+			this.resetLabels();
+		}
 	},
 
 	clearTegs: function()
