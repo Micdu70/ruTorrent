@@ -287,7 +287,7 @@ plugin.leaveTeg = function()
 	$("#List").show();
 	if(theWebUI.actLbls["flabel_cont"] && $($$(theWebUI.actLbls["flabel_cont"])).hasClass("exteg")) 
 	{
-		plugin.switchLabel($("#flabel_cont .-_-_-all-_-_-").get(0));
+		plugin.switchLabel.call(theWebUI,$("#flabel_cont .-_-_-all-_-_-").get(0));
 	}
 }
 
