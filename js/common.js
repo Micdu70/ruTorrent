@@ -1627,3 +1627,12 @@ function strip_tags(input, allowed)
 		return allowed.indexOf('<' + $1.toLowerCase() + '>') > -1 ? $0 : '';
     	});
 }
+
+// Caveat: doesn't work with Internet Explorer.
+(function setBrowserTimezoneCookie()
+{
+	try 
+	{
+		document.cookie = "browser_timezone="+Intl.DateTimeFormat().resolvedOptions().timeZone
+	} catch(e) {}
+}).apply();
