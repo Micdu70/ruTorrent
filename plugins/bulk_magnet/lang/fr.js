@@ -1,7 +1,7 @@
 ﻿/*
- * PLUGIN SOURCE
+ * PLUGIN BULK_MAGNET
  *
- * English language file.
+ * French language file.
  *
  * Author: 
  */
