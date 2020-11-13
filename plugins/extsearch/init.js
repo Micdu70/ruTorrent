@@ -389,11 +389,10 @@ theWebUI.extTegDelete = function()
 plugin.createExtTegMenu = function(e, id)
 {
 	var trtArray = new Array();
-	var tegArray = new Array();
 	plugin.tegArray = new Array();
 
 	var sr = theWebUI.getTable("teg").rowSel;
-	for(var k in sr)
+	for(var k in sr) 
 	{
 		if(sr[k] == true)
 		{
@@ -402,15 +401,14 @@ plugin.createExtTegMenu = function(e, id)
 			{
 				var hash = nfo.data.hash;
 				if(hash && $type(theWebUI.torrents[hash]))
-					trtArray.push(nfo);
+					trtArray.push(hash);
 				else
-					tegArray.push(nfo);
-				plugin.tegArray.push(nfo);
+					plugin.tegArray.push(nfo);
 			}
 		}
 	}
 	theContextMenu.clear();
-	if(!trtArray.length && tegArray.length)
+	if(plugin.tegArray.length)
 	{
 	        if(plugin.canChangeMenu())
 	        {
@@ -425,15 +423,15 @@ plugin.createExtTegMenu = function(e, id)
 	else
 	if(trtArray.length)
 	{
-		if(plugin.canChangeMenu())
-		{
-			theContextMenu.add([ theUILang.tegMenuLoad, null]);
-			theContextMenu.add([ theUILang.tegMenuOpen, "theWebUI.extTegOpen()"]);
-			theContextMenu.add([ theUILang.tegMenuDeleteItem, "theWebUI.tegItemRemove()"]);
-			theContextMenu.add([ theUILang.exsURLInfo, "theWebUI.showTegURLInfo()"] );
-		}
-		else
-			theContextMenu.hide();
+	        var table = theWebUI.getTable("trt");
+		for(var k in table.rowSel)
+			table.rowSel[k] = false;
+		table.selCount = trtArray.length;
+		for(var i = 0; i<trtArray.length; i++)
+			table.rowSel[trtArray[i]] = true;
+		table.refreshSelection();
+		theWebUI.dID = trtArray[0];
+		theWebUI.createMenu(e, trtArray[0]);
 	}
 }
 
@@ -568,31 +566,45 @@ theWebUI.tegItemSelect = function(e,id)
 		}
 	}
 	var table = theWebUI.getTable("trt");
+	for(var k in table.rowSel)
+		table.rowSel[k] = false;
+	table.selCount = trtArray.length;
+	for(var i = 0; i<trtArray.length; i++)
+		table.rowSel[trtArray[i]] = true;
 	table.refreshSelection();
 	if(id && (nfo = plugin.getTegByRowId(id)) &&
-		(theWebUI.getTable("teg").selCount == 1) &&
 		nfo.data.hash && 
 		$type(theWebUI.torrents[nfo.data.hash]))
-		theWebUI.showDetails(nfo.data.hash, true);
+		theWebUI.trtSelect(e, nfo.data.hash);
 	else
 	{
 		theWebUI.dID = "";
 		theWebUI.clearDetails();
+		if((e.which==3) && plugin.canChangeMenu())
+		{
+			plugin.createExtTegMenu(e, id);
+			theContextMenu.show();
+		}
+		else
+			theContextMenu.hide();
 	}
-	if((e.which==3) && plugin.canChangeMenu())
-	{
-		plugin.createExtTegMenu(e, id);
-		theContextMenu.show();
-	}
-	else
-		theContextMenu.hide();
 }
 
 theWebUI.tegItemDblClick = function(obj)
 {
-	var nfo = plugin.getTegByRowId(obj.id);
+	var nfo = plugin.getTegByRowId(obj.id);	
 	if(nfo)
-		window.open(nfo.data.desc,"_blank");
+	{
+		if(nfo.data.hash && $type(theWebUI.torrents[nfo.data.hash]))
+		{
+			var tmp = new Object();
+	                tmp.id = nfo.data.hash;
+        		theWebUI.getTable("trt").ondblclick( tmp );
+        		delete tmp;
+		}
+		else
+			window.open(nfo.data.desc,"_blank");
+	}
 }
 
 plugin.resizeTop = theWebUI.resizeTop;
