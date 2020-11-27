@@ -336,6 +336,7 @@ plugin.onLangLoaded = function()
 			$("#scimgcmd").val("ffmpeggetall");
 			$('#scgetimg').submit();
 		});
+		$('.scplay').hide();
 		plugin.markLoaded();
 	}
 }

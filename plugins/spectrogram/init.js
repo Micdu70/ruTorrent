@@ -149,6 +149,7 @@ plugin.onLangLoaded = function()
 			$("#soximgcmd").val("soxgetimage");
 			$('#soxgetimg').submit();
 		});
+		$('.soxplay').hide();
 		plugin.markLoaded();
 	}
 }
