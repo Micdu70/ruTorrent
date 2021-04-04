@@ -5,12 +5,12 @@
  *
  * Initial Author: art.spb, December 2009.
  *
- * Author: Gianni
+ * Author: 
  */
 
- theUILang.peerComment		= "Aggiungi commento";
- theUILang.peerCommentLabel	= "Inserisci nuovo commento per il peer";
- theUILang.commentName		= "Commento";
+ theUILang.peerComment		= "Add comment";
+ theUILang.peerCommentLabel	= "Enter new comment for peer";
+ theUILang.commentName		= "Comment";
  theUILang.countryName		= "Paese";
  theUILang.databaseNotFound	= "GeoIP2 plugin: GeoLite2 database (Country/City) not found or not readable.";
  theUILang.databaseError	= "GeoIP2 plugin: bad or corrupted GeoLite2 database found.";
