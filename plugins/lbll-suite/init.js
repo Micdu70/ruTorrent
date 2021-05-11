@@ -1,6 +1,6 @@
 //
 // ruTorrent Torrent-Addition Auto-Labels
-// Version 0.8 
+// Version 0.8
 // by thezwallrus
 //
 
@@ -68,6 +68,27 @@ theWebUI.initLabelDirs = function()
 
 theWebUI.initLabelDirs();
 
+
+function labelTree(branches) {
+  const roots = new Set(branches.map(b => b[0]));
+  const subtrees = {};
+  for (let root of roots) {
+	subtrees[root] = labelTree(branches.
+		filter(b => b.length > 1 && b[0] === root).
+		map(b => b.slice(1)));
+  }
+  return subtrees;
+}
+
+function walkLabelTree(lblTree, callback, level=0, baseLabel='') {
+  const nodes = Object.keys(lblTree).sort();
+  for (let node of nodes) {
+	const absoluteLabel = baseLabel + node;
+	callback([level, node, absoluteLabel])
+	walkLabelTree(lblTree[node], callback, level+1, absoluteLabel + '/');
+  }
+}
+
 //
 // ruTorrent Nested Categorical Label-Sorter "/"
 // Version 0.8
@@ -75,67 +96,54 @@ theWebUI.initLabelDirs();
 //
 
 plugin.loadLabels = theWebUI.loadLabels;
-theWebUI.loadLabels = function(d)
+/**
+ *
+ * @param {Object.<string, number>} c - <label_name, count>
+ * @param {Object.<string, number>} s - labels size
+ */
+theWebUI.loadLabels = function(c, s)
 {
 	if (plugin.enabled)
 	{
-		var p = $("#lbll");
-		var subArray = [];
-		var temp = new Array();
-		for(var lbl in d) 
-		{
-			this.labels["-_-_-" + lbl + "-_-_-"] = d[lbl];
+		const p = $("#lbll");
+		const touchedIds = new Array();
+		const labels = Object.keys(c).sort();
+	const branches = labels.map(l => l.split('/'));
+	const lblTree = labelTree(branches);
+	walkLabelTree(lblTree, ([level, node, lbl]) => {
+		const shortLabel = '../'.repeat(level) + escapeHTML(node);
+		if (lbl in c) {
+			const lblSize = this.settings["webui.show_labelsize"] ? " ; " + theConverter.bytes(s[lbl], 2) : "";
+			this.labels["-_-_-" + lbl + "-_-_-"] = c[lbl] + lblSize;
 			this.cLabels[lbl] = 1;
-			temp["-_-_-" + lbl + "-_-_-"] = true;
-			if(!$$("-_-_-" + lbl + "-_-_-")) 
+			touchedIds["-_-_-" + lbl + "-_-_-"] = true;
+			if(!$$("-_-_-" + lbl + "-_-_-"))
 			{
-				var splitlbl = lbl.split("/");
-				if (splitlbl.length>1)
-				{
-					var family = splitlbl.shift();
-					var catlbl = splitlbl.join("/");
-					var moveOver = "&nbsp;&nbsp;-";
-					if ( $.inArray(family, subArray) < 0	)
-					{
-						subArray.push(family);
-					}
-				} else {
-					catlbl = lbl;
-					moveOver = "";
-				}
-				p.append( $("<LI>").
-					attr("id","-_-_-" + lbl + "-_-_-").
-					html(moveOver + escapeHTML(catlbl) + "&nbsp;(<span id=\"-_-_-" + lbl + "-_-_-c\">" + d[lbl] + "</span>)").
-					mouseclick(theWebUI.labelContextMenu).addClass("cat") );
+			p.append( $("<LI>").
+				attr("id","-_-_-" + lbl + "-_-_-").
+				html(shortLabel + "&nbsp;(<span id=\"-_-_-" + lbl + "-_-_-c\">" + c[lbl] + lblSize + "</span>)").
+				mouseclick(theWebUI.labelContextMenu).addClass("cat") );
 			}
+		} else {
+			p.append( $('<LI>').html(shortLabel).css("cursor","default") );
 		}
-		for (var dadlbl in subArray) 
-		{
-			if(!$$("-_-_-" + subArray[dadlbl] + "-_-_-")) 
-			{
-				$('#lbll').append( $('<LI>').html(subArray[dadlbl]).css("cursor","default") );
-			} else {
-				$("#-_-_-" + subArray[dadlbl] + "-_-_-").remove().appendTo( $('#lbll') ).mouseclick(theWebUI.labelContextMenu).addClass("cat");
-			}
-			$("li[id^='-_-_-" + subArray[dadlbl] + "']").not( $("#-_-_-" + subArray[dadlbl] + "-_-_-") ).remove().appendTo( $('#lbll') ).mouseclick(theWebUI.labelContextMenu).addClass("cat");
-		}
+	});
 		var actDeleted = false;
 		p.children().each(function(ndx,val)
 		{
 			var id = val.id;
-			if(id && !$type(temp[id]))
+			if(id && !id in touchedIds)
 			{
 				$(val).remove();
 				delete theWebUI.labels[id];
 				delete theWebUI.cLabels[id.substr(5, id.length - 10)];
-				if(theWebUI.actLbl == id) 
+				if(theWebUI.actLbls["plabel_cont"] == id)
 					actDeleted = true;
 			}
 		});
-		if(actDeleted) 
+		if(actDeleted)
 		{
-			this.actLbl = "";
-			this.switchLabel($$("-_-_-all-_-_-").get(0))
+			this.switchLabel($("#plabel_cont .-_-_-all-_-_-").get(0))
 		}
 	}
 	else
