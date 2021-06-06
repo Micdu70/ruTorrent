@@ -17,6 +17,7 @@ var dStatus = { started : 1, paused : 2, checking : 4, hashing : 8, error : 16 }
 
 var theRequestManager = 
 {
+	maxContentSize: 2 << 20,
 	aliases: {},
         trt:
         {
@@ -219,10 +220,11 @@ function rTorrentStub( URI )
 		}
 	}
 	this.commands = new Array();
-	if(eval('typeof(this.'+this.action+') != "undefined"'))
-		eval("this."+this.action+"()");
-	if(this.commands.length>0)
-		this.makeMultiCall();
+	this.commandOffset = 0;
+	this.allHashes = this.hashes;
+	if(this.action in this)
+		this[this.action]();
+	theRequestManager.patchRequest( this.commands );
 }
 
 rTorrentStub.prototype.getfiles = function()
@@ -647,42 +649,53 @@ rTorrentStub.prototype.createqueued = function()
 
 }
 
-rTorrentStub.prototype.makeMultiCall = function()
+rTorrentStub.prototype.makeNextCall = function()
 {
-	theRequestManager.patchRequest( this.commands );
-	this.content = '<?xml version="1.0" encoding="UTF-8"?><methodCall><methodName>';
-	if(this.commands.length==1)
+	if(this.commands.length == 0 && this.commandOffset == 0)
 	{
-		var cmd = this.commands[0];
-	        this.content+=(cmd.command+'</methodName><params>');
-	        for(var i=0; i<cmd.params.length; i++)
-	        {
-	        	var prm = cmd.params[i];
-			this.content += ('<param><value><'+prm.type+'>'+prm.value+
-				'</'+prm.type+'></value></param>');
-	        }
-	        cmd = null;
+		// using current this.content and this.hashes
+		this.commandOffset = -1;
+		return true;
+	}
+	else if (this.isError())
+		return false;
+
+
+	const commands = this.commands.slice(this.commandOffset);
+	let cmdCount = commands.length;
+
+	this.content = '<?xml version="1.0" encoding="UTF-8"?><methodCall><methodName>';
+	if(cmdCount==1)
+	{
+		const cmd = commands[0];
+		this.content += cmd.command+'</methodName><params>' + cmd.params.map(prm =>
+			'<param><value><'+prm.type+'>'+prm.value+ '</'+prm.type+'></value></param>'
+		).join('');
 	}
 	else
 	{
 		this.content+='system.multicall</methodName><params><param><value><array><data>';
-		for(var i=0; i<this.commands.length; i++)
+		const tailLength = 31 + 22;
+		for(let i=0; i<commands.length; i++)
 		{
-			var cmd = this.commands[i];
-			this.content+=('<value><struct><member><name>methodName</name><value><string>'+
-				cmd.command+'</string></value></member><member><name>params</name><value><array><data>');
-			for(var j=0; j<cmd.params.length; j++)
-			{
-				var prm = cmd.params[j];
-				this.content += ('<value><'+prm.type+'>'+
-					prm.value+'</'+prm.type+'></value>');
+			const cmd = commands[i];
+			let cmd_string = ('<value><struct><member><name>methodName</name><value><string>'+
+				cmd.command+'</string></value></member><member><name>params</name><value><array><data>'+
+				cmd.params.map(prm => '<value><'+prm.type+'>'+ prm.value+'</'+prm.type+'></value>').join('')+
+				"</data></array></value></member></struct></value>");
+			if (i > 0 && this.content.length + cmd_string.length + tailLength > theRequestManager.maxContentSize) {
+				cmdCount = i;
+				break;
 			}
-			this.content+="</data></array></value></member></struct></value>";
-			cmd = null;
+			this.content+=cmd_string;
 		}
 		this.content+='</data></array></value></param>';
 	}
 	this.content += '</params></methodCall>';
+
+	this.hashes = this.allHashes.slice(this.commandOffset, this.commandOffset+cmdCount);
+	this.commandOffset += cmdCount;
+	return cmdCount>0;
 }
 
 rTorrentStub.prototype.getValue = function(values,i) 
@@ -728,8 +741,8 @@ rTorrentStub.prototype.getResponse = function(data)
 	}
 	if(!this.isError())
 	{
-		if(eval('typeof(this.'+this.action+'Response) != "undefined"'))
-			eval("ret = this."+this.action+"Response(data)");
+		if(this.action+'Response' in this)
+			ret = this[this.action+'Response'](data);
 		else
 			ret = data;
 	}
@@ -1140,6 +1153,8 @@ rTorrentStub.prototype.listResponse = function(xml)
 		torrent.seeds = torrent.seeds_actual + " (" + torrent.seeds_all + ")";
 		torrent.peers = torrent.peers_actual + " (" + torrent.peers_all + ")";
 		var hash = this.getValue(values,0);
+		if(!torrent.save_path)
+			theWebUI.request( "?action=getsavepath&hash=" + hash );
 		$.each( theRequestManager.trt.handlers, function(i,handler)
 		{
 		        if(handler)
@@ -1148,6 +1163,19 @@ rTorrentStub.prototype.listResponse = function(xml)
 		ret.torrents[hash] = torrent;
 	}
 	return(ret);
+}
+
+rTorrentStub.prototype.getsavepath = function()
+{
+	var cmd = new rXMLRPCCommand( "d.open" );
+	cmd.addParameter( "string", this.hashes[0] );
+	this.commands.push( cmd );
+	cmd = new rXMLRPCCommand( "d.get_base_path" );
+	cmd.addParameter( "string", this.hashes[0] );
+	this.commands.push( cmd );
+	cmd = new rXMLRPCCommand( "d.close" );
+	cmd.addParameter( "string", this.hashes[0] );
+	this.commands.push( cmd );
 }
 
 rTorrentStub.prototype.isError = function()
@@ -1163,14 +1191,53 @@ rTorrentStub.prototype.logErrorMessages = function()
 
 function Ajax(URI, isASync, onComplete, onTimeout, onError, reqTimeout) 
 {
-        var stub = new rTorrentStub(URI);
+	// fragmentation of xml command (Content-Length must be <2MB for rtorrent 0.9.7)
+        const stub = new rTorrentStub(URI);
+	let completeData = undefined;
+
+	function nextFragment(data) {
+		if (data) {
+			if (!completeData) {
+				completeData = data;
+			} else if (completeData instanceof Array) {
+				completeData = completeData.concat(data);
+			} else if (completeData instanceof Object) {
+				Object.assign(completeData, data);
+			} else {
+				completeData += data;
+			}
+		}
+		stub.logErrorMessages();
+		if (stub.makeNextCall()) {
+			ajaxStub(stub, isASync, nextFragment, onTimeout, onError, reqTimeout);
+		} else if(stub.listRequired) {
+			Ajax("?list=1", isASync, onComplete, onTimeout, onError, reqTimeout);
+		} else if (!stub.isError()) {
+			switch($type(onComplete))
+			{
+				case "function":
+					onComplete(completeData);
+					break;
+				case "array":
+				{
+					onComplete[0].apply(onComplete[1],
+						new Array(completeData, onComplete[2]));
+					break;
+				}
+			}
+		}
+	}
+	nextFragment();
+}
+
+function ajaxStub(stub, isASync, onComplete, onTimeout, onError, reqTimeout) {
 	$.ajax(
 	{
 		type: stub.method,
 		url: stub.mountPoint,
 		async: (isASync == null) ? true : isASync,
 		contentType: stub.contentType,
-		data: (stub.content == null) ? "" : stub.content,
+		data: (stub.content === null) ? "" : stub.content,
 		processData: false,
 		timeout: reqTimeout || 10000,
 		cache: stub.cache,
@@ -1195,7 +1262,6 @@ function Ajax(URI, isASync, onComplete, onTimeout, onError, reqTimeout)
 				if(timestamp != null)
 					theWebUI.serverDeltaTime = new Date().getTime()-iv(timestamp)*1000;
 			}
-			stub = null;
 		},
 		error: function(XMLHttpRequest, textStatus, errorThrown)
 		{
@@ -1204,8 +1270,8 @@ function Ajax(URI, isASync, onComplete, onTimeout, onError, reqTimeout)
 			else
 			if(($type(onError) == "function"))
 			{
-			        var status = "Status unavailable";
-			        var response = "Response unavailable";
+				var status = "Status unavailable";
+				var response = "Response unavailable";
 				try { status = XMLHttpRequest.status; response = XMLHttpRequest.responseText; } catch(e) {};				
 				if( stub.dataType=="script" )
 					response = errorThrown;
@@ -1214,28 +1280,7 @@ function Ajax(URI, isASync, onComplete, onTimeout, onError, reqTimeout)
 		},
 		success: function(data, textStatus)
 		{
-			var responseText = stub.getResponse(data);
-			stub.logErrorMessages();
-			if(stub.listRequired)
-				Ajax("?list=1", isASync, onComplete, onTimeout, onError, reqTimeout);
-			else
-	            	{
-	            		if(!stub.isError())
-	            		{
-	            			switch($type(onComplete))
-	            			{
-						case "function":
-							onComplete(responseText);
-							break;
-						case "array":
-						{
-							onComplete[0].apply(onComplete[1], 
-								new Array(responseText, onComplete[2]));
-							break;
-						}
-					}
-				}
-			}
+			onComplete(stub.getResponse(data));
 		}
 	});
 }
