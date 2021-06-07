@@ -1518,10 +1518,12 @@ plugin.onLangLoaded = function()
 	theDialogManager.make( "dlgLoadTorrents", theUILang.torrent_add,
 		"<div class='content'>"+
 			"<label>"+theUILang.Base_directory+":</label><input type='text' id='RSSdir_edit' class='TextboxLarge'/><br/>"+
+			"<div class='torrent_add_options'>"+
 			"<label></label><input type='checkbox' id='RSSnot_add_path'/>"+theUILang.Dont_add_tname+"<br/>"+
 			"<label></label><input type='checkbox' id='RSStorrents_start_stopped'/>"+theUILang.Dnt_start_down_auto+"<br/>"+
 			"<label></label><input type='checkbox' id='RSSfast_resume'/>"+theUILang.doFastResume+"<br/>"+
 			"<label></label><input type='checkbox' id='RSSrandomize_hash'/>"+theUILang.doRandomizeHash+"<br/>"+
+			"</div>"+
 			"<label>"+theUILang.Label+":</label><input type='text' id='RSS_label' class='TextboxLarge'/>"+
 		"</div>"+
 		"<div id='buttons' class='aright buttons-list'><input type='button' class='OK Button' value="+theUILang.ok+" onclick='theDialogManager.hide(\"dlgLoadTorrents\");theWebUI.RSSLoadTorrents();return(false);'/><input type='button' class='Cancel Button' value='"+theUILang.Cancel+"'/></div>",
@@ -1543,15 +1545,19 @@ plugin.onLangLoaded = function()
 					"<legend>"+theUILang.rssFiltersLegend+"</legend>"+
 					"<label>"+theUILang.rssFilter+":</label><input type='text' id='FLT_body' class='TextboxLarge'/><br/>"+
 					"<label>"+theUILang.rssExclude+":</label><input type='text' id='FLT_exclude' class='TextboxLarge'/><br/>"+
+					"<div class='torrent_add_options'>"+
 					"<label></label><input type='checkbox' class='chk' id='FLTchktitle'/>"+theUILang.rssCheckTitle+"<br/>"+
 					"<label></label><input type='checkbox' class='chk' id='FLTchkdesc'/>"+theUILang.rssCheckDescription+"<br/>"+
 					"<label></label><input type='checkbox' class='chk' id='FLTchklink'/>"+theUILang.rssCheckLink+"<br/>"+
+					"</div>"+
 					"<label>"+theUILang.rssStatus+":</label><select id='FLT_rss'><option value=''>"+theUILang.allFeeds+"</option></select><br/>"+
 					"<label>"+theUILang.Base_directory+":</label><input type='text' id='FLTdir_edit' class='TextboxLarge'/><br/>"+
+					"<div class='torrent_add_options'>"+
 					"<label></label><input type='checkbox' class='chk' id='FLTnot_add_path'/>"+theUILang.Dont_add_tname+"<br/>"+
 					"<label></label><input type='checkbox' class='chk' id='FLTtorrents_start_stopped'/>"+theUILang.Dnt_start_down_auto+"<br/>"+
 					"<label></label><input type='checkbox' class='chk' id='FLTfast_resume'/>"+theUILang.doFastResume+"<br/>"+
 					"<label></label><input type='checkbox' class='chk' id='FLTrandomize_hash'/>"+theUILang.doRandomizeHash+"<br/>"+
+					"</div>"+
 					"<label>"+theUILang.rssMinInterval+":</label><select id='FLT_interval'>"+
 					        "<option value='-1'>"+theUILang.rssIntervalAlways+"</option>"+
 					        "<option value='0'>"+theUILang.rssIntervalOnce+"</option>"+
