@@ -91,18 +91,20 @@ function makeContent()
 		'<div class="cont fxcaret">'+
 			'<form action="addtorrent.php" id="addtorrent" method="post" enctype="multipart/form-data" target="uploadfrm">'+
 				'<label>'+theUILang.Base_directory+':</label><input type="text" id="dir_edit" name="dir_edit" class="TextboxLarge"/><br/>'+
+				'<div class="torrent_add_options">'+
 				'<span id="not_add_path_option">'+
-				'<label>&nbsp;</label><input type="checkbox" name="not_add_path" id="not_add_path"/>'+theUILang.Dont_add_tname+'<br/>'+
+				'<label></label><input type="checkbox" name="not_add_path" id="not_add_path"/>'+theUILang.Dont_add_tname+'<br/>'+
 				'</span>'+
 				'<span id="torrents_start_stopped_option">'+
-				'<label>&nbsp;</label><input type="checkbox" name="torrents_start_stopped" id="torrents_start_stopped"/>'+theUILang.Dnt_start_down_auto+'<br/>'+
+				'<label></label><input type="checkbox" name="torrents_start_stopped" id="torrents_start_stopped"/>'+theUILang.Dnt_start_down_auto+'<br/>'+
 				'</span>'+
 				'<span id="fast_resume_option">'+
-				'<label>&nbsp;</label><input type="checkbox" name="fast_resume" id="fast_resume"/>'+theUILang.doFastResume+'<br/>'+
+				'<label></label><input type="checkbox" name="fast_resume" id="fast_resume"/>'+theUILang.doFastResume+'<br/>'+
 				'</span>'+
 				'<span id="randomize_hash_option">'+
-				'<label>&nbsp;</label><input type="checkbox" name="randomize_hash" id="randomize_hash"/>'+theUILang.doRandomizeHash+'<br/>'+
+				'<label></label><input type="checkbox" name="randomize_hash" id="randomize_hash"/>'+theUILang.doRandomizeHash+'<br/>'+
 				'</span>'+
+				'</div>'+
 				'<label>'+theUILang.Label+':</label><input type="text" id="tadd_label" name="tadd_label" class="TextboxLarge" /><select id="tadd_label_select"></select><br/>'+
 				'<hr/>'+
 				'<label>'+theUILang.Torrent_file+':</label><input type="file" multiple="multiple" name="torrent_file[]" id="torrent_file" accept=".torrent" class="TextboxLarge"/><br/>'+
@@ -1052,13 +1054,13 @@ function correctContent()
 	{
 		$.extend(theRequestManager.aliases,
 		{
-			"get_port_open"		: { name: "network.listen.is_open", prm: 0 },
-			"get_port_random" 	: { name: "network.port.randomize", prm: 0 },
-			"get_port_range" 	: { name: "network.port.range", prm: 0 },
-			"set_port_open"		: { name: "network.listen.open", prm: 1 },
-			"set_port_random"	: { name: "network.port.randomize.set", prm: 1 },
-			"set_port_range"	: { name: "network.port.range.set", prm: 1 },
-			"network.listen.port" 	: { name: "network.port", prm: 0 }
+			"get_port_open"		:	{ name: "network.listen.is_open", prm: 0 },
+			"get_port_random"	:	{ name: "network.port.randomize", prm: 0 },
+			"get_port_range"	:	{ name: "network.port.range", prm: 0 },
+			"set_port_open"		:	{ name: "network.listen.open", prm: 1 },
+			"set_port_random"	:	{ name: "network.port.randomize.set", prm: 1 },
+			"set_port_range"	:	{ name: "network.port.range.set", prm: 1 },
+			"network.listen.port"	:	{ name: "network.port", prm: 0 }
 		});
 	}
 	$("#rtorrentv").text(theWebUI.systemInfo.rTorrent.version+"/"+theWebUI.systemInfo.rTorrent.libVersion);

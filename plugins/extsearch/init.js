@@ -755,10 +755,12 @@ plugin.onLangLoaded = function()
 	theDialogManager.make( "tegLoadTorrents", theUILang.torrent_add,
 		"<div class='content'>"+
 			"<label>"+theUILang.Base_directory+":</label><input type='text' id='tegdir_edit' class='TextboxLarge'/><br/>"+
+			"<div class='torrent_add_options'>"+
 			"<label></label><input type='checkbox' id='tegnot_add_path'/>"+theUILang.Dont_add_tname+"<br/>"+
 			"<label></label><input type='checkbox' id='tegtorrents_start_stopped'/>"+theUILang.Dnt_start_down_auto+"<br/>"+
 			"<label></label><input type='checkbox' id='tegfast_resume'/>"+theUILang.doFastResume+"<br/>"+
 			"<label></label><input type='checkbox' id='tegrandomize_hash'/>"+theUILang.doRandomizeHash+"<br/>"+
+			"</div>"+
 			"<label>"+theUILang.Label+":</label><input type='text' id='teglabel' class='TextboxLarge'/>"+
 		"</div>"+
 		"<div id='buttons' class='aright buttons-list'><input type='button' class='OK Button' value="+theUILang.ok+" onclick='theDialogManager.hide(\"tegLoadTorrents\");theWebUI.tegLoadTorrents();return(false);'/><input type='button' class='Cancel Button' value='"+theUILang.Cancel+"'/></div>",
