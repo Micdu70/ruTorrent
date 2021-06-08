@@ -3,11 +3,9 @@
 $rtp = realpath(dirname(__FILE__).'/../../php/xmlrpc.php');
 
 require_once($rtp);
-include('xmlfix.php');
 
 include('conf.php');
 include('flm.class.php');
-
 
 $e = new FLM();
 
@@ -72,7 +70,7 @@ switch($e->postlist['action']) {
 	case 'sess':
 		$e->get_session();
 		break;
-	default:	
+	default:
 		$e->sdie('Invalid action');
 }
 

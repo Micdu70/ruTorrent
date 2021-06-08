@@ -1,7 +1,7 @@
 <?php
 
-$fm['tempdir'] = '/tmp';		// path were to store temporary data ; must be writable
-$fm['mkdperm'] = 755; 		// default permission to set to new created directories
+$fm['tempdir'] = '/tmp';	// path were to store temporary data ; must be writable
+$fm['mkdperm'] = 755;		// default permission to set to new created directories
 
 // set with fullpath to binary or leave empty
 

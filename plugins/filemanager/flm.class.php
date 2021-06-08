@@ -4,8 +4,6 @@ class FLM {
 
 	public $hash = 'flm.dat';
 
-	protected $xmlrpc;
-
 	public $postlist = array('dir', 'action', 'file', 'fls', 'target', 'mode', 'to', 'format');
 
 	public $workdir;
@@ -17,23 +15,21 @@ class FLM {
 	protected $filelist;
 
 	protected $uisettings;
-	
+
 	protected $settings = array();
 
 	public $shout = TRUE;
 
-
 	public function __construct() {
 		/*
-		 * Construct function - initialises the objects properties 
-		 * 
+		 * Construct function - initialises the objects properties
+		 *
 		 * $userdir - current user home directory (jail)
 		 * $workdir - the directory where filemanager is working at the time of call
 		 * $filelist - the current file-list sent for processing (archive,move,copy,delete, etc)
 		 * $settings - array with filemager current configuration
 		 * $fman_path - string flm.class.php directory location
-		 * $xmlrpc - xml-rpc fixxed request class initialization for internal object calls
-		 * 
+		 *
 		 */
 		global $topDirectory, $fm;
 
@@ -41,7 +37,6 @@ class FLM {
 		$this->userdir = addslash($topDirectory);
 
 		$this->workdir = $this->userdir.(($this->postlist['dir'] !== false) ? $this->postlist['dir']: '');
-		$this->xmlrpc = new rxmlrpcfix();
 
 		if(($this->postlist['dir'] === FALSE) || !$this->remote_test($this->workdir, 'd')) { $this->output['errcode'] = 2; die();}
 		elseif ($this->postlist['action'] === FALSE) { $this->sdie('No action defined');}
@@ -76,19 +71,17 @@ class FLM {
 		$a['volume'] = (intval($options['vsize'])*1024);
 		$a['multif'] = (($a['type'] == 'rar') && ($options['format'] == 'old')) ? '-vn' : '';
 
-		
 		switch($a['type']) {
-				
-				case 'gzip': 
-				case 'bzip2': 
+				case 'gzip':
+				case 'bzip2':
 					$bin = 'tar';
 					break;
-				default: 
+				default:
 					$bin = $a['type'];
 		}
 
-		if(($options['password'] != '') && ($a['type'] == 'rar')) { 
-			$this->filelist = escapeshellarg('-p'.$options['password']).' '.$this->filelist; 
+		if(($options['password'] != '') && ($a['type'] == 'rar')) {
+			$this->filelist = escapeshellarg('-p'.$options['password']).' '.$this->filelist;
 		}
 
 
@@ -105,28 +98,30 @@ class FLM {
 		$lk = array_pop($keys);
 
 		$what[$lk] .= ' '.$this->filelist.' &';
-		
+
 		if(!is_dir ($this->temp['dir'])) {
 				umask(000);
 				mkdir($this->temp['dir'], 0777, true);
 		}
 
-		$this->xmlrpc->addCommand(new rXMLRPCCommand("execute", $what));
-		if($this->xmlrpc->success()) {$this->output['tmpdir'] = $this->temp['tok'];} else {$this->output['errcode'] = 23;}
+		$req = new rXMLRPCRequest();
+		$req->addCommand(new rXMLRPCCommand("execute", $what));
+		if($req->success()) {$this->output['tmpdir'] = $this->temp['tok'];} else {$this->output['errcode'] = 23;}
 	}
-	
+
 	public function remote_test($dirname, $o) {
 		/*
 		 * Test's to check if $arg1 exists from rtorrent userid
-		 * 
+		 *
 		 *	@param string target - full path
 		 * 	@param string option to use with test
-		 * 
+		 *
 		 * 	Example: $this->remote_test('/tmp', 'd');
 		 * 	For test command options see: http://linux.about.com/library/cmd/blcmdl1_test.htm
 		 */
-		$this->xmlrpc->addCommand( new rXMLRPCCommand('execute', array('test','-'.$o, $dirname)));
-		return (bool)$this->xmlrpc->success();
+		$req = new rXMLRPCRequest();
+		$req->addCommand( new rXMLRPCCommand('execute', array('test','-'.$o, $dirname)));
+		return (bool)$req->success();
 	}
 
 
@@ -134,7 +129,7 @@ class FLM {
 
 		if((count($_POST) < 1) && ((PHP_SAPI == 'cli') || (PHP_SAPI == 'cgi'))) {
 				foreach(file("php://input") as $key => $inv) {$_POST[$key] = rawurldecode($inv);}
-		} 
+		}
 
 		$dupe = $what;
 		foreach($dupe as $k => $val) {
@@ -157,14 +152,15 @@ class FLM {
 
 	public function dirlist() {
 
-		$this->xmlrpc->addCommand( new rXMLRPCCommand('execute_capture', 
+		$req = new rXMLRPCRequest();
+		$req->addCommand( new rXMLRPCCommand('execute_capture',
 					array('find', $this->workdir, '-mindepth', '1', '-maxdepth', '1', '-printf', '%y\t%f\t%s\t%C@\t%#m\n')));
 
-		if(!$this->xmlrpc->success()) {$this->output['errcode'] = 10; return false;}
+		if(!$req->success()) {$this->output['errcode'] = 10; return false;}
 		$this->output['listing'] = array();
 
 		$i = 0;
-		foreach (explode("\n", trim($this->xmlrpc->val[0])) as $fileline) {
+		foreach (explode("\n", trim($req->val[0])) as $fileline) {
 
 			if(empty($fileline)) {continue;}
 			$f = array();
@@ -260,13 +256,13 @@ class FLM {
 		// rm doesnt know, we do
 		$trm = trim(trim($value, '/'));
 
-		if($trm != '') {$value = escapeshellarg($this->workdir.$trm);} 
+		if($trm != '') {$value = escapeshellarg($this->workdir.$trm);}
 		else {$value = $trm;}
 	}
 
 
 	public function extract($archive, $target) {
-		
+
 		if(($archive === FALSE) || !LFS::is_file($this->userdir.$archive))  {$this->output['errcode'] = 6; return false; }
 		if(($target === FALSE) || LFS::is_file($this->userdir.$target))  {$this->output['errcode'] = 16; return false; }
 
@@ -283,7 +279,7 @@ class FLM {
 				$bin = 'tar';
 				break;
 			default:
-				$this->output['errcode'] = 18; return false; 
+				$this->output['errcode'] = 18; return false;
 		}
 
 		$this->batch_exec(array("sh", "-c", escapeshellarg($this->fman_path.'/scripts/extract')." ".escapeshellarg(getExternal($bin))." ".
@@ -303,8 +299,8 @@ class FLM {
 		error_reporting (0);
 
 		if ($large) {
-			passthru('cat '.escapeshellarg($file), $err); 
-		} else { 
+			passthru('cat '.escapeshellarg($file), $err);
+		} else {
 
 			$seek_start=0;
 			$seek_end=-1;
@@ -312,20 +308,19 @@ class FLM {
 
 			if (ob_get_length() === false) {ob_start();}
 
-			if(isset($_SERVER['HTTP_RANGE']) || isset($HTTP_SERVER_VARS['HTTP_RANGE'])) { 
- 
+			if(isset($_SERVER['HTTP_RANGE']) || isset($HTTP_SERVER_VARS['HTTP_RANGE'])) {
+
 				$seek_range = isset($HTTP_SERVER_VARS['HTTP_RANGE']) ? substr($HTTP_SERVER_VARS['HTTP_RANGE'] , strlen('bytes=')) : substr($_SERVER['HTTP_RANGE'] , strlen('bytes='));
-				$range=explode('-',$seek_range); 
+				$range=explode('-',$seek_range);
 
 				if($range[0] > 0) {$seek_start = intval($range[0]); }
 
 				$seek_end = ($range[1] > 0) ? intval($range[1]) : -1;
 
-
-		   		header('HTTP/1.0 206 Partial Content'); 
-		    		header('Status: 206 Partial Content'); 
-		    		header('Accept-Ranges: bytes'); 
-		    		header("Content-Range: bytes $seek_start-$seek_end/".$fs); 
+		   		header('HTTP/1.0 206 Partial Content');
+		    		header('Status: 206 Partial Content');
+		    		header('Accept-Ranges: bytes');
+		    		header("Content-Range: bytes $seek_start-$seek_end/".$fs);
 
 			}
 
@@ -348,15 +343,15 @@ class FLM {
 
     			fclose($fo);
 		}
-		
+
 		exit;
 	}
 
 	public function get_filelist($what) {
 
-		$files = json_decode($what, true); 
+		$files = json_decode($what, true);
 
-		array_walk($files, array($this,'escape_fullpath')); 
+		array_walk($files, array($this,'escape_fullpath'));
 		$filelist = implode(' ', $files);
 
 		return $filelist;
@@ -364,7 +359,7 @@ class FLM {
 
 	public function get_session() {
 		$sid = session_id();
-		
+
 		if(empty($sid)) {
 			session_start();
 			$_SESSION['uname'] = getUser();
@@ -380,17 +375,17 @@ class FLM {
 
 		$k['tmp'] = addslash($this->settings['tempdir']).'.rutorrent/.fman/'.$token;
 		$k['pid'] = $k['tmp'].'/pid';
-		
+
 		if(!is_file($k['pid'])) {$this->output['errcode'] = 19; return false;};
 
 		$pid = file($k['pid']);
 		$pid = trim($pid[0]);
 
+		$req = new rXMLRPCRequest();
+		$req->addCommand(new rXMLRPCCommand( "execute", array('sh', '-c', 'kill -15 '.$pid.' `pgrep -P '.$pid.'`')));
+		$req->addCommand(new rXMLRPCCommand( "execute", array("rm", "-rf", $k['tmp'])));
 
-		$this->xmlrpc->addCommand(new rXMLRPCCommand( "execute", array('sh', '-c', 'kill -15 '.$pid.' `pgrep -P '.$pid.'`')));
-		$this->xmlrpc->addCommand(new rXMLRPCCommand( "execute", array("rm", "-rf", $k['tmp'])));
-	
-		if(!$this->xmlrpc->success()) {$this->output['errcode'] = 20;}
+		if(!$req->success()) {$this->output['errcode'] = 20;}
 	}
 
 
@@ -410,13 +405,13 @@ class FLM {
 
 		if(($file === FALSE) || !LFS::is_file($this->workdir.$file))  {$this->output['errcode'] = 6; return false; }
 
-		$this->xmlrpc->addCommand( new rXMLRPCCommand('execute_capture', 
+		$req = new rXMLRPCRequest();
+		$req->addCommand( new rXMLRPCCommand('execute_capture',
 					array(getExternal("mediainfo"), $this->workdir.$file)));
 
-		if(!$this->xmlrpc->success()) {$this->output['errcode'] = 14; return false;}
+		if(!$req->success()) {$this->output['errcode'] = 14; return false;}
 
-
-		$this->output['minfo'] = $this->xmlrpc->val[0];
+		$this->output['minfo'] = $req->val[0];
 
 	}
 
@@ -434,10 +429,11 @@ class FLM {
 
 		if(($this->postlist['target'] === FALSE) || is_dir($this->workdir.$this->postlist['target'])) {$this->output['errcode'] = 16; return false;}
 
-		$this->xmlrpc->addCommand(new rXMLRPCCommand('execute', array('mkdir', '--mode='.$this->settings['mkdperm'], 
+		$req = new rXMLRPCRequest();
+		$req->addCommand(new rXMLRPCCommand('execute', array('mkdir', '--mode='.$this->settings['mkdperm'],
 											$this->workdir.$this->postlist['target'])));
 
-		if(!$this->xmlrpc->success()) {$this->output['errcode'] = 4;} 
+		if(!$req->success()) {$this->output['errcode'] = 4;}
 
 	}
 
@@ -453,8 +449,8 @@ class FLM {
 
 
 	public function read_file($file, $array = TRUE) {
-		
-		return $array ? file($this->workdir.$file, FILE_IGNORE_NEW_LINES) : file_get_contents($this->workdir.$file); 
+
+		return $array ? file($this->workdir.$file, FILE_IGNORE_NEW_LINES) : file_get_contents($this->workdir.$file);
 
 	}
 
@@ -489,9 +485,10 @@ class FLM {
 
 		if (!LFS::test($what,'e') || LFS::test($to,'e')) {$this->output['errcode'] = 18; return false;}
 
-		$this->xmlrpc->addCommand(new rXMLRPCCommand('execute', array('mv', '-f', $what, $to)));
+		$req = new rXMLRPCRequest();
+		$req->addCommand(new rXMLRPCCommand('execute', array('mv', '-f', $what, $to)));
 
-		if(!$this->xmlrpc->success()) {$this->output['errcode'] = 8; } 
+		if(!$req->success()) {$this->output['errcode'] = 8; }
 
 	}
 
@@ -505,14 +502,13 @@ class FLM {
 
 	public function video_info($video_file) {
 
-		$this->xmlrpc->addCommand( new rXMLRPCCommand('execute_capture', 
+		$req = new rXMLRPCRequest();
+		$req->addCommand( new rXMLRPCCommand('execute_capture',
 					array(getExternal("ffprobe"), '-v', 0, '-show_format', '-show_streams', '-print_format', 'json' ,'-i', $video_file)));
-		//$this->xmlrpc->success();
 
+		if(!$req->success()) {$this->sdie('Current ffmpeg/ffprobe not supported. Please compile a newer version.'); }
 
-		if(!$this->xmlrpc->success()) {$this->sdie('Current ffmpeg/ffprobe not supported. Please compile a newer version.'); }
-
-		$vinfo = json_decode(stripslashes($this->xmlrpc->val[0]), true);
+		$vinfo = json_decode(stripslashes($req->val[0]), true);
 
 		$video_stream = false;
 		$video['stream_id'] = 0;
@@ -533,15 +529,15 @@ class FLM {
 
 		if($video['total_frames'] < 1) {
 
-			$this->xmlrpc->addCommand( new rXMLRPCCommand('execute_capture', 
+			$req->addCommand( new rXMLRPCCommand('execute_capture',
 					array(getExternal("ffprobe"), '-v', 0, '-show_streams', '-print_format', 'json', '-count_frames', '-i', $video_file)));
 
-			$vinfo = json_decode(stripslashes($this->xmlrpc->val[0]), true);
+			$vinfo = json_decode(stripslashes($req->val[0]), true);
 			$video['total_frames'] = $vinfo['streams'][$video['stream_id']]['nb_read_frames'];
 
 		}
 
-		return $video; 
+		return $video;
 
 	}
 
@@ -563,18 +559,13 @@ class FLM {
 			$settings[$k] = (isset($uisettings['webui.fManager.'.$k]) && ($uisettings['webui.fManager.'.$k] > 1)) ? $uisettings['webui.fManager.'.$k] : $value;
 		}
 
-
-
 		$vinfo = $this->video_info($file);
 
-		$frame_step = floor($vinfo['total_frames'] / ($settings['scrows'] * $settings['sccols']));	
+		$frame_step = floor($vinfo['total_frames'] / ($settings['scrows'] * $settings['sccols']));
 
 		$this->batch_exec(array("sh", "-c", escapeshellarg($this->fman_path.'/scripts/screens')." ".escapeshellarg(getExternal('ffmpeg'))." ".
 							escapeshellarg($this->temp['dir'])." ".escapeshellarg($file)." ".escapeshellarg($output)." ".
 							$frame_step." ".$settings['scwidth']." ".$settings['scrows']." ".$settings['sccols']));
-
-
-
 
 	}
 
@@ -613,7 +604,7 @@ class FLM {
 
 	}
 
-	
+
 	public function sfv_check ($file) {
 
 		if ($this->fext($file) != 'sfv') 	{ $this->output['errcode'] = 18; return false;}
@@ -622,7 +613,6 @@ class FLM {
 		$this->batch_exec(array("sh", "-c", escapeshellarg(getPHP())." ".escapeshellarg($this->fman_path.'/scripts/sfvcheck.php')." ".
 							escapeshellarg($this->temp['dir'])." ".escapeshellarg($this->userdir.$file)));
 	}
-
 
 
 	public function sfv_create ($file) {
@@ -649,6 +639,5 @@ class FLM {
 
 
 }
-
 
 ?>
