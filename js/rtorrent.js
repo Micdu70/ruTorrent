@@ -17,7 +17,6 @@ var dStatus = { started : 1, paused : 2, checking : 4, hashing : 8, error : 16 }
 
 var theRequestManager = 
 {
-	maxContentSize: 2 << 20,
 	aliases: {},
         trt:
         {
@@ -220,22 +219,10 @@ function rTorrentStub( URI )
 		}
 	}
 	this.commands = new Array();
-	if(this.action in this)
-		this[this.action]();
-	if(this.commands.length>0) {
-		const fragmentedCalls = makeFragmentedMultiCalls(this.commands);
-		this.contentFragments = fragmentedCalls.map( ([content, _]) => content);
-		let offset = 0;
-		this.hashesFragments = fragmentedCalls.map( ([_, cmdLen]) => cmdLen)
-			.map(c => {
-				const hashes = this.hashes.slice(offset, offset+c);
-				offset += c;
-				return hashes;
-			}, this);
-	} else {
-		this.contentFragments = [this.content];
-		this.hashesFragments = [this.hashes];
-	}
+	if(eval('typeof(this.'+this.action+') != "undefined"'))
+		eval("this."+this.action+"()");
+	if(this.commands.length>0)
+		this.makeMultiCall();
 }
 
 rTorrentStub.prototype.getfiles = function()
@@ -660,51 +647,42 @@ rTorrentStub.prototype.createqueued = function()
 
 }
 
-function makeFragmentedMultiCalls(commands, accCalls)
+rTorrentStub.prototype.makeMultiCall = function()
 {
-	theRequestManager.patchRequest( commands );
-
-	const fragmentedCalls = accCalls == undefined ? [] : accCalls;
-	let content = '<?xml version="1.0" encoding="UTF-8"?><methodCall><methodName>';
-	let cmdCount = commands.length;
-	if(commands.length==1)
+	theRequestManager.patchRequest( this.commands );
+	this.content = '<?xml version="1.0" encoding="UTF-8"?><methodCall><methodName>';
+	if(this.commands.length==1)
 	{
-		const cmd = commands[0];
-		content+=(cmd.command+'</methodName><params>');
-		for(let i=0; i<cmd.params.length; i++)
-		{
-			const prm = cmd.params[i];
-			content += ('<param><value><'+prm.type+'>'+prm.value+
+		var cmd = this.commands[0];
+	        this.content+=(cmd.command+'</methodName><params>');
+	        for(var i=0; i<cmd.params.length; i++)
+	        {
+	        	var prm = cmd.params[i];
+			this.content += ('<param><value><'+prm.type+'>'+prm.value+
 				'</'+prm.type+'></value></param>');
-		}
+	        }
+	        cmd = null;
 	}
 	else
 	{
-		content+='system.multicall</methodName><params><param><value><array><data>';
-		const tailLength = 31 + 22;
-		for(let i=0; i<commands.length; i++)
+		this.content+='system.multicall</methodName><params><param><value><array><data>';
+		for(var i=0; i<this.commands.length; i++)
 		{
-			const cmd = commands[i];
-			let cmd_string = ('<value><struct><member><name>methodName</name><value><string>'+
+			var cmd = this.commands[i];
+			this.content+=('<value><struct><member><name>methodName</name><value><string>'+
 				cmd.command+'</string></value></member><member><name>params</name><value><array><data>');
-			for(let j=0; j<cmd.params.length; j++)
+			for(var j=0; j<cmd.params.length; j++)
 			{
-				const prm = cmd.params[j];
-				cmd_string +=('<value><'+prm.type+'>'+ prm.value+'</'+prm.type+'></value>');
+				var prm = cmd.params[j];
+				this.content += ('<value><'+prm.type+'>'+
+					prm.value+'</'+prm.type+'></value>');
 			}
-			cmd_string +=("</data></array></value></member></struct></value>");
-			if (i > 0 && content.length + cmd_string.length + tailLength > theRequestManager.maxContentSize) {
-				cmdCount = i;
-				makeFragmentedMultiCalls(commands.slice(i), fragmentedCalls);
-				break;
-			}
-			content+=cmd_string;
+			this.content+="</data></array></value></member></struct></value>";
+			cmd = null;
 		}
-		content+='</data></array></value></param>';
+		this.content+='</data></array></value></param>';
 	}
-	content += '</params></methodCall>';
-	fragmentedCalls.splice(0, 0, [content, cmdCount])
-	return fragmentedCalls;
+	this.content += '</params></methodCall>';
 }
 
 rTorrentStub.prototype.getValue = function(values,i) 
@@ -750,8 +728,8 @@ rTorrentStub.prototype.getResponse = function(data)
 	}
 	if(!this.isError())
 	{
-		if(this.action+'Response' in this)
-			ret = this[this.action+'Response'](data);
+		if(eval('typeof(this.'+this.action+'Response) != "undefined"'))
+			eval("ret = this."+this.action+"Response(data)");
 		else
 			ret = data;
 	}
@@ -1200,56 +1178,14 @@ rTorrentStub.prototype.logErrorMessages = function()
 
 function Ajax(URI, isASync, onComplete, onTimeout, onError, reqTimeout) 
 {
-	// fragmentation of xml command (Content-Length must be <2MB for rtorrent 0.9.7)
-	const stub = new rTorrentStub(URI);
-	let fragindex = 0;
-	let completeData = undefined;
-
-	function nextFragment(data) {
-		if (data) {
-			if (!completeData) {
-				completeData = data;
-			} else if (completeData instanceof Array) {
-				completeData = completeData.concat(data);
-			} else if (completeData instanceof Object) {
-				Object.assign(completeData, data);
-			} else {
-				completeData += data;
-			}
-		}
-		stub.logErrorMessages();
-		if (fragindex < stub.contentFragments.length && !stub.isError()) {
-			stub.content = stub.contentFragments[fragindex]
-			stub.hashes = stub.hashesFragments[fragindex];
-			fragindex += 1;
-			ajaxStub(stub, isASync, nextFragment, onTimeout, onError, reqTimeout);
-		} else if(stub.listRequired) {
-			Ajax("?list=1", isASync, onComplete, onTimeout, onError, reqTimeout);
-		} else if (!stub.isError()) {
-			switch($type(onComplete))
-			{
-				case "function":
-					onComplete(completeData);
-					break;
-				case "array":
-				{
-					onComplete[0].apply(onComplete[1],
-						new Array(completeData, onComplete[2]));
-					break;
-				}
-			}
-		}
-	}
-	nextFragment();
-}
-function ajaxStub(stub, isASync, onComplete, onTimeout, onError, reqTimeout) {
+        var stub = new rTorrentStub(URI);
 	$.ajax(
 	{
 		type: stub.method,
 		url: stub.mountPoint,
 		async: (isASync == null) ? true : isASync,
 		contentType: stub.contentType,
-		data: stub.content,
+		data: (stub.content == null) ? "" : stub.content,
 		processData: false,
 		timeout: reqTimeout || 10000,
 		cache: stub.cache,
@@ -1274,6 +1210,7 @@ function ajaxStub(stub, isASync, onComplete, onTimeout, onError, reqTimeout) {
 				if(timestamp != null)
 					theWebUI.serverDeltaTime = new Date().getTime()-iv(timestamp)*1000;
 			}
+			stub = null;
 		},
 		error: function(XMLHttpRequest, textStatus, errorThrown)
 		{
@@ -1292,7 +1229,28 @@ function ajaxStub(stub, isASync, onComplete, onTimeout, onError, reqTimeout) {
 		},
 		success: function(data, textStatus)
 		{
-			onComplete(stub.getResponse(data));
+			var responseText = stub.getResponse(data);
+			stub.logErrorMessages();
+			if(stub.listRequired)
+				Ajax("?list=1", isASync, onComplete, onTimeout, onError, reqTimeout);
+			else
+	            	{
+	            		if(!stub.isError())
+	            		{
+	            			switch($type(onComplete))
+	            			{
+						case "function":
+							onComplete(responseText);
+							break;
+						case "array":
+						{
+							onComplete[0].apply(onComplete[1], 
+								new Array(responseText, onComplete[2]));
+							break;
+						}
+					}
+				}
+			}
 		}
 	});
 }
