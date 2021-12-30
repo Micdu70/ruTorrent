@@ -299,10 +299,8 @@ var theWebUI =
 				}
 			}
 		};
-		if(browser.isOpera)
-			$(document).keypress(keyEvent);
-		else
-			$(document).keydown(keyEvent);
+		
+		$(document).on( browser.isOpera ? 'keypress' : 'keydown', keyEvent);
 	},
 
 	updateServerTime: function()
@@ -319,7 +317,7 @@ var theWebUI =
 	{
 		if(thePlugins.isInstalled("_getdir"))
 		{
-			$('#dir_edit').after($("<input type=button>").addClass("Button").attr("id","dir_btn").focus( function() { this.blur(); } ));
+			$('#dir_edit').after($("<input type=button>").addClass("Button").attr("id","dir_btn").on('focus', function() { this.blur(); } ));
 			var btn = new this.rDirBrowser( 'tadd', 'dir_edit', 'dir_btn' );
 			theDialogManager.setHandler('tadd','afterHide',function()
 			{
@@ -457,7 +455,7 @@ var theWebUI =
 		});
 
 		// user must be able add peer when peers are empty
-		$("#PeerList .stable-body").mouseclick( function(e)
+		$("#PeerList .stable-body").mouseclick(function(e)
 		{
 			if(e.which==3)
 			{
@@ -648,7 +646,7 @@ var theWebUI =
 					}
 					o.val(v);
 				}
-				o.change();
+				o.trigger('change');
 			}
 		});
 		if($type(this.settings["webui.search"]))
@@ -929,14 +927,14 @@ var theWebUI =
 						theContextMenu.add([theUILang.peerSnub, this.isTorrentCommandEnabled('snub',this.dID) ? "theWebUI.setPeerState('snub')" : null]);
 						theContextMenu.add([theUILang.peerUnsnub, this.isTorrentCommandEnabled('unsnub',this.dID) ? "theWebUI.setPeerState('unsnub')" : null]);
 					}
-					else
-	                		{
-      						if(!this.peers[id].snubbed) 
-      							theContextMenu.add([theUILang.peerSnub, this.isTorrentCommandEnabled('snub',this.dID) ? "theWebUI.setPeerState('snub')" : null]);
+					else if (this.peers[id])
+	                {
+      					if(!this.peers[id].snubbed) 
+      						theContextMenu.add([theUILang.peerSnub, this.isTorrentCommandEnabled('snub',this.dID) ? "theWebUI.setPeerState('snub')" : null]);
 						else
 							theContextMenu.add([theUILang.peerUnsnub, this.isTorrentCommandEnabled('unsnub',this.dID) ? "theWebUI.setPeerState('unsnub')" : null]);
-	      				}
-		        	        theContextMenu.add([CMENU_SEP]); 
+	      			}
+		        	theContextMenu.add([CMENU_SEP]);
 				}
 			}
 			if(selCount)
@@ -1866,7 +1864,7 @@ var theWebUI =
 
 	setTeg: function(str)
 	{
-		str = $.trim(str);
+		str = str.trim();
 		if(str!="")
 		{
 			for( var id in this.tegs )
@@ -2148,7 +2146,7 @@ var theWebUI =
 
 	createLabel: function() 
 	{
-   		var lbl = $.trim($("#txtLabel").val());
+   		var lbl = $("#txtLabel").val().trim();
 		lbl = lbl.replace(/\"/g, "'");
    		if(lbl != "") 
 		{
@@ -2367,7 +2365,7 @@ var theWebUI =
 			$("#tu").text($type(this.trackers[this.dID]) && $type(this.trackers[this.dID][d.tracker_focus]) ? this.trackers[this.dID][d.tracker_focus].name : '');
 	        	$("#hs").text(this.dID.substring(0,40));
 			$("#ts").text(d.msg);
-			var url = $.trim(d.comment);
+			var url = d.comment.trim();
 			if(!url.match(/<a href/i))
 			{
 				var start = url.indexOf("http://");
