@@ -1,6 +1,6 @@
 <?php
 
-require_once( "util.php" );
+require_once( 'which.php' );
 require_once( "settings.php" );
 
 function pluginsSort($a, $b)
@@ -522,6 +522,7 @@ if($handle = opendir('../plugins'))
 		}
 		$jResult.=testRemoteRequests($remoteRequests);
 		$theSettings->store();
+		WhichInstance::save();
 	}
 	closedir($handle);
 }
