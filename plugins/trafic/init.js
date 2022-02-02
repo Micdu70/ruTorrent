@@ -280,8 +280,9 @@ if(plugin.canChangeTabs())
 
 if(plugin.canChangeColumns() && plugin.collectStatForTorrents)
 {
+	plugin.ratioChanged = false;	
 	plugin.config = theWebUI.config;
-	theWebUI.config = function(data)
+	theWebUI.config = function()
 	{
 		this.tables.trt.columns.push({ text: 'Ratio/day', width: '75x', id: "ratioday", type: TYPE_NUMBER});
 		this.tables.trt.columns.push({ text: 'Ratio/week', width: '75px', id: "ratioweek", type: TYPE_NUMBER});
@@ -297,16 +298,7 @@ if(plugin.canChangeColumns() && plugin.collectStatForTorrents)
 		        }
 			return(plugin.trtFormat(table,arr));
 		}
-		plugin.config.call(this,data);
-		plugin.reqId = theRequestManager.addRequest("trt", null, function(hash,torrent,value)
-		{
-			if($type(theWebUI.ratiosStat[hash]) && torrent.size)
-			{
-				torrent.ratioday = theWebUI.ratiosStat[hash][0]/torrent.size;
-				torrent.ratioweek = theWebUI.ratiosStat[hash][1]/torrent.size;
-				torrent.ratiomonth = theWebUI.ratiosStat[hash][2]/torrent.size;
-			}
-		});
+		plugin.config.call(this);
 		plugin.trtRenameColumn();
 	}
 
@@ -357,7 +349,29 @@ if(plugin.canChangeColumns() && plugin.collectStatForTorrents)
 
 	plugin.updateRatios = function( d )
 	{
+		plugin.ratioChanged = true;
 		window.setTimeout( plugin.startRatios, plugin.updateInterval*60000 );
+	}
+	
+	plugin.addTorrents = theWebUI.addTorrents;
+	theWebUI.addTorrents = function(data)
+	{
+		if(plugin.ratioChanged)
+		{
+			$.each(data.torrents, function(hash,torrent)
+			{
+				if($type(theWebUI.ratiosStat[hash]) && torrent.size)
+				{
+					torrent.ratioday = theWebUI.ratiosStat[hash][0]/torrent.size;
+					torrent.ratioweek = theWebUI.ratiosStat[hash][1]/torrent.size;
+					torrent.ratiomonth = theWebUI.ratiosStat[hash][2]/torrent.size;
+				}
+			});
+			plugin.addTorrents.call(this, data);
+			plugin.ratioChanged = false;
+		}
+		else
+			plugin.addTorrents.call(this, data);
 	}
 
 	rTorrentStub.prototype.getratios = function()

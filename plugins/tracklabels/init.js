@@ -4,12 +4,12 @@ theWebUI.trackersLabels = {};
 plugin.injectedStyles = {};
 
 plugin.config = theWebUI.config;
-theWebUI.config = function(data)
+theWebUI.config = function()
 {
 	if(plugin.canChangeColumns())
 	{
 		theWebUI.tables.trt.columns.push({ text: theUILang.Tracker, width: '100px', id: 'tracker', type: TYPE_STRING});
-		plugin.config.call(this,data);
+		plugin.config.call(this);
 		plugin.reqId = theRequestManager.addRequest("trk", null, function(hash,tracker,value)
 		{
 			var domain = theWebUI.getTrackerName( tracker.name );
@@ -192,12 +192,6 @@ theWebUI.rebuildTrackersLabels = function()
 				}
 			}
 		}
-		if(plugin.canChangeColumns())
-		{
-			table.refreshRows();
-			if(table.sIndex !=- 1)
-				table.Sort();		
-		}
 		var ul = $("#torrl");
 
 		var keys = new Array();
@@ -237,6 +231,19 @@ theWebUI.rebuildTrackersLabels = function()
 		this.trackersLabels = trackersLabels;
 		if(needSwitch)
 			theWebUI.resetLabels();
+		
+		setTimeout(plugin.refreshTrackerRows, 0);
+	}
+}
+
+plugin.refreshTrackerRows = async function()
+{
+	if(plugin.canChangeColumns())
+	{
+		var table = theWebUI.getTable('trt');
+		table.refreshRows();
+		if(table.sIndex !=- 1)
+			table.Sort();
 	}
 }
 

@@ -60,7 +60,7 @@ var thePeersCache =
 };
 
 plugin.config = theWebUI.config;
-theWebUI.config = function(data)
+theWebUI.config = function()
 {
 	if(plugin.canChangeColumns())
 	{
@@ -94,10 +94,10 @@ theWebUI.config = function(data)
 		}
 		if(plugin.retrieveComments)
 			this.tables.prs.columns.push({text : 'Comment', width : '200px', id: 'comment', type : TYPE_STRING});
-		plugin.config.call(this,data);
-		if(plugin.retrieveCountry || plugin.retrieveComments)
-			plugin.prsRenameColumn();
 	}
+	plugin.config.call(this);
+	if((plugin.retrieveCountry || plugin.retrieveComments) && plugin.canChangeColumns())
+		plugin.done();
 }
 
 plugin.getpeersResponse = rTorrentStub.prototype.getpeersResponse;
@@ -142,7 +142,7 @@ rTorrentStub.prototype.getpeersResponse = function(xml)
 
 if(plugin.canChangeColumns())
 {
-	plugin.prsRenameColumn = function()
+	plugin.done = function()
 	{
 		if(plugin.allStuffLoaded)
 		{

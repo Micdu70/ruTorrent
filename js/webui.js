@@ -3,17 +3,17 @@
  *
  */
 
-var theWebUI = 
+var theWebUI =
 {
         version: "3.10",
 	tables:
 	{
-		trt: 
+		trt:
 		{
 			obj: new dxSTable(),
 			columns:
 			[
-				{ text: theUILang.Name, 		width: "200px", id: "name",		type: TYPE_STRING }, 
+				{ text: theUILang.Name, 		width: "200px", id: "name",		type: TYPE_STRING },
 		      		{ text: theUILang.Status, 		width: "100px",	id: "status",		type: TYPE_STRING },
 		   		{ text: theUILang.Size, 		width: "60px",	id: "size", 		type: TYPE_NUMBER },
 	   			{ text: theUILang.Done, 		width: "100px",	id: "done",		type: TYPE_PROGRESS },
@@ -106,8 +106,8 @@ var theWebUI =
 			container:	"PeerList",
 			format:		theFormatter.peers,
 			onselect:	function(e,id) { theWebUI.prsSelect(e,id) },
-			ondblclick:	function(obj) 
-			{ 
+			ondblclick:	function(obj)
+			{
 				if(obj.id && theWebUI.peers[obj.id])
 					window.open(theURLs.IPQUERYURL + theWebUI.peers[obj.id].ip.replace(/^\[?(.+?)\]?$/, '$1'), "_blank");
 				return(false);
@@ -172,6 +172,8 @@ var theWebUI =
 	sTimer: 	null,
 	updTimer: 	null,
 	configured:	false,
+	jsonLoaded:	false,
+	pluginsLoaded: false,
 	firstLoad:	true,
 	interval:	-1,
 	torrents:	{},
@@ -190,7 +192,7 @@ var theWebUI =
 		"-_-_-nlb-_-_-":	0,
 		"-_-_-err-_-_-":	0
 	},
-	actLbls:	
+	actLbls:
 	{
 		"pstate_cont": ""
 	},
@@ -220,6 +222,7 @@ var theWebUI =
 		else
 		{
 			this.catchErrors(false);
+			this.getUISettings();
 			this.getPlugins();
 		}
 	},
@@ -299,7 +302,7 @@ var theWebUI =
 				}
 			}
 		};
-		
+
 		$(document).on( browser.isOpera ? 'keypress' : 'keydown', keyEvent);
 	},
 
@@ -310,10 +313,15 @@ var theWebUI =
 
 	getPlugins: function()
 	{
-		this.requestWithoutTimeout("?action=getplugins", [this.getUISettings, this]);
+		this.requestWithoutTimeout("?action=getplugins", [this.loadPlugins, this]);
 	},
 
 	getUISettings: function()
+	{
+		this.requestWithoutTimeout("?action=getuisettings", [this.initSettings, this], true);
+	},
+
+	loadPlugins: function()
 	{
 		if(thePlugins.isInstalled("_getdir"))
 		{
@@ -327,21 +335,29 @@ var theWebUI =
 		correctContent();
 		this.updateServerTime();
 		window.setInterval( this.updateServerTime, 1000 );
-		this.requestWithoutTimeout("?action=getuisettings", [this.initFinish, this]);
+		
+		// Mark plugins as done loading. Initialize UI if JSON file is loaded
+		this.pluginsLoaded = true;
+		this.initFinish();
 	},
 
-	initFinish: function(data)
+	initFinish: function()
 	{
-		this.config(data);
-	        this.catchErrors(true);
-		this.assignEvents();
-		this.resize();
-		this.update();		
+		// Loading JSON settings and plugins are done in an asynchronous fashion
+		// We must wait until both of these are completed before preceding
+		// Otherwise, the WebUI and plugins will not initialize properly
+		if (this.jsonLoaded && this.pluginsLoaded)
+		{
+			this.config();
+			this.catchErrors(true);
+			this.assignEvents();
+			this.resize();
+			this.update();	
+		}
 	},
 
-	config: function(data)
+	config: function()
 	{
-		this.addSettings(data);
 		$.each(this.tables, function(ndx,table)
 		{
 		        var width = theWebUI.settings["webui."+ndx+".colwidth"];
@@ -374,16 +390,16 @@ var theWebUI =
 				table.obj.colOrder = theWebUI.settings["webui."+ndx+".colorder"];
 			table.obj.onsort = function()
 			{
-   				if( (this.sIndex != theWebUI.settings["webui."+this.prefix+".sindex"]) || 
+   				if( (this.sIndex != theWebUI.settings["webui."+this.prefix+".sindex"]) ||
 		   			(this.reverse != theWebUI.settings["webui."+this.prefix+".rev"]) ||
-					(this.secIndex != theWebUI.settings["webui."+this.prefix+".sindex2"]) || 
-		   			(this.secRev != theWebUI.settings["webui."+this.prefix+".rev2"])) 
+					(this.secIndex != theWebUI.settings["webui."+this.prefix+".sindex2"]) ||
+		   			(this.secRev != theWebUI.settings["webui."+this.prefix+".rev2"]))
 		      			theWebUI.save();
 			}
 		});
 		var table = this.getTable("fls");
 		table.oldFilesSortAlphaNumeric = table.sortAlphaNumeric;
-		table.sortAlphaNumeric = function(x, y) 
+		table.sortAlphaNumeric = function(x, y)
 		{
 			if(!theWebUI.settings["webui.fls.view"] && theWebUI.dID)
 			{
@@ -434,7 +450,7 @@ var theWebUI =
 		table = this.getTable("plg");
 		if(table)
 		{
-			$.each( thePlugins.list, function(ndx,plugin) 
+			$.each( thePlugins.list, function(ndx,plugin)
 			{
 				table.addRowById(
 				{
@@ -461,7 +477,7 @@ var theWebUI =
 			{
 				theWebUI.prsSelect(e,null);
 				return(true);
-			}	
+			}
 			return(false);
 		});
 
@@ -511,12 +527,12 @@ var theWebUI =
 		theContextMenu.show(offs.left-5,offs.top+5+$("#plugins").height());
 	},
 
-	plgSelect: function(e, id) 
+	plgSelect: function(e, id)
 	{
 		if($type(id) && (e.which==3))
 		{
 		        theContextMenu.clear();
-		        if(this.getTable("plg").selCount > 1) 
+		        if(this.getTable("plg").selCount > 1)
 		        {
 				theContextMenu.add([theUILang.plgShutdown, "theWebUI.plgShutdown()"]);
 				theContextMenu.add([CMENU_CHILD, theUILang.plgLaunch,
@@ -536,8 +552,8 @@ var theWebUI =
 					]]);
 				if(plugin.help)
 				{
-					theContextMenu.add([CMENU_SEP]); 
-					theContextMenu.add([theUILang.Help, "window.open('"+plugin.help+"', '_blank')" ]);	
+					theContextMenu.add([CMENU_SEP]);
+					theContextMenu.add([theUILang.Help, "window.open('"+plugin.help+"', '_blank')" ]);
 				}
 			}
 	   		theContextMenu.show();
@@ -551,9 +567,9 @@ var theWebUI =
 		var table = this.getTable("plg");
    		var sr = table.rowSel;
    		var str = "";
-   		for(var k in sr) 
+   		for(var k in sr)
    		{
-      			if(sr[k]) 
+      			if(sr[k])
       			{
       				var name = k.substr(5);
 	      			var plugin = thePlugins.get(name);
@@ -570,9 +586,9 @@ var theWebUI =
 		var table = this.getTable("plg");
    		var sr = table.rowSel;
    		var str = "";
-   		for(var k in sr) 
+   		for(var k in sr)
    		{
-      			if(sr[k]) 
+      			if(sr[k])
       			{
       				var name = k.substr(5);
 	      			var plugin = thePlugins.get(name);
@@ -587,7 +603,7 @@ var theWebUI =
         plgRefresh : function()
         {
         	table = this.getTable("plg");
-		$.each( thePlugins.list, function(ndx,plugin) 
+		$.each( thePlugins.list, function(ndx,plugin)
 		{
 			table.setValueById( "_plg_"+plugin.name, "status", plugin.enabled ? 1 : 0 );
 			table.setValueById( "_plg_"+plugin.name, "launch", plugin.launched ? (plugin.canBeLaunched() ? 1 : 2) : 0 );
@@ -598,7 +614,17 @@ var theWebUI =
 // settings
 //
 
-	addSettings: function(newSettings) 
+	initSettings: function(newSettings)
+	{
+		// Add webui settings for the first time
+		this.addSettings(newSettings);
+		
+		// Mark JSON file as loaded. Initialize UI if plugins are loaded
+		this.jsonLoaded = true;
+		this.initFinish();
+	},
+	
+	addSettings: function(newSettings)
 	{
 		$.each(newSettings, function(i,v)
 		{
@@ -623,7 +649,7 @@ var theWebUI =
    		this.loadSettings();
    	},
 
-	loadSettings: function() 
+	loadSettings: function()
 	{
 		$.each(this.settings, function(i,v)
 		{
@@ -653,7 +679,7 @@ var theWebUI =
 			theSearchEngines.set(this.settings["webui.search"],true);
    	},
 
-	setSettings: function() 
+	setSettings: function()
 	{
 	        var req = '';
 	        var needSave = false;
@@ -688,7 +714,7 @@ var theWebUI =
 							}
 							case "webui.alternate_color":
 							{
-								$.each(theWebUI.tables, function(ndx,table)	
+								$.each(theWebUI.tables, function(ndx,table)
 								{
 							  		table.obj.colorEvenRows = nv;
 						     			table.obj.refreshSelection();
@@ -720,7 +746,7 @@ var theWebUI =
 							}
 							case "webui.fullrows":
 							{
-								$.each(theWebUI.tables, function(ndx,table)	
+								$.each(theWebUI.tables, function(ndx,table)
 								{
 						      			table.obj.maxRows = iv(nv);
 						      			table.obj.refreshRows();
@@ -729,7 +755,7 @@ var theWebUI =
 							}
 							case "webui.no_delaying_draw":
 							{
-								$.each(theWebUI.tables, function(ndx,table)	
+								$.each(theWebUI.tables, function(ndx,table)
 								{
 						      			table.obj.noDelayingDraw = iv(nv);
 								});
@@ -766,7 +792,7 @@ var theWebUI =
 		window.location.reload();
    	},
 
-   	showSettings: function() 
+   	showSettings: function()
 	{
 		if($("#stg").is(":visible"))
 			theDialogManager.hide("stg");
@@ -779,22 +805,22 @@ var theWebUI =
 		}
    	},
 
-	addAndShowSettings: function(data) 
+	addAndShowSettings: function(data)
 	{
 	        if(data)
 			this.addSettings(data);
 		theDialogManager.show("stg");
 	},
 
-        save: function(reply) 
+        save: function(reply)
 	{
 	        if(!theWebUI.configured)
 			return;
-	        $.each(theWebUI.tables, function(ndx,table)	
+	        $.each(theWebUI.tables, function(ndx,table)
 		{
 	   		var width = [];
 	   		var enabled = [];
-	   		for(i = 0; i < table.obj.cols; i++) 
+	   		for(i = 0; i < table.obj.cols; i++)
    			{
       				width.push( table.obj.getColWidth(i) );
 	      			enabled.push( table.obj.isColumnEnabled(i) );
@@ -825,7 +851,7 @@ var theWebUI =
 	{
 		if(this.activeView=='PeerList')
 		{
-			if(this.dID != "") 
+			if(this.dID != "")
 				this.request("?action=getpeers&hash="+this.dID,[this.addPeers, this]);
 			else
 				this.clearPeers();
@@ -835,30 +861,30 @@ var theWebUI =
 	clearPeers: function()
 	{
 		this.getTable("prs").clearRows();
-		for(var k in this.peers) 
+		for(var k in this.peers)
       			delete this.peers[k];
 		this.peers = {};
 	},
 
-	addPeers: function(data) 
+	addPeers: function(data)
 	{
    		var table = this.getTable("prs");
    		$.extend(this.peers,data);
    		$.each(data,function(id,peer)
 		{
 			peer.name = peer.name+':'+peer.port
-			if(!$type(table.rowdata[id])) 
+			if(!$type(table.rowdata[id]))
 				table.addRowById(peer, id, peer.icon, peer.attr);
-        		else 
+        		else
 			{
-				for(var i in peer) 
+				for(var i in peer)
         	       			table.setValueById(id, i, peer[i]);
 				table.setIcon(id,peer.icon);
 				table.setAttr(id,peer.attr);
 			}
 			peer._updated = true;
 		});
-		for(var k in this.peers) 
+		for(var k in this.peers)
 		{
 			if(!this.peers[k]._updated)
 			{
@@ -871,19 +897,19 @@ var theWebUI =
 		table.Sort();
 	},
 
-	prsSelect: function(e, id) 
+	prsSelect: function(e, id)
 	{
 		if(theWebUI.createPeerMenu(e, id))
 	   		theContextMenu.show();
    	},
 
-	getPeerIds: function(cmd) 
+	getPeerIds: function(cmd)
 	{
    		var sr = this.getTable("prs").rowSel;
    		var str = "";
-   		for(var k in sr) 
+   		for(var k in sr)
    		{
-			var enabled = ((cmd=='unsnub') && this.peers[k].snubbed) || 
+			var enabled = ((cmd=='unsnub') && this.peers[k].snubbed) ||
 				((cmd=='snub') && !this.peers[k].snubbed) || ((cmd=='ban') || (cmd=='kick'));
       			if((sr[k] == true) && enabled)
 				str += "&f=" + k;
@@ -906,30 +932,30 @@ var theWebUI =
    	createPeerMenu : function(e, id)
 	{
    		var ret = false;
-   		if(e.which == 3) 
+   		if(e.which == 3)
 		{
 	   		theContextMenu.clear();
 			var selCount = theWebUI.getTable("prs").selCount;
 	   		if(this.dID && $type(this.torrents[this.dID]))
    			{
-				theContextMenu.add([theUILang.peerAdd, 
-					(this.torrents[this.dID].private==0) && 
+				theContextMenu.add([theUILang.peerAdd,
+					(this.torrents[this.dID].private==0) &&
 					this.isTorrentCommandEnabled('addpeer',this.dID) &&
-					(theWebUI.systemInfo.rTorrent.iVersion>=0x804) ? 
+					(theWebUI.systemInfo.rTorrent.iVersion>=0x804) ?
 					"theDialogManager.show('padd')"	: null]);
 				ret = true;
 				if(selCount && theWebUI.systemInfo.rTorrent.iVersion>=0x807)
 				{
 					theContextMenu.add([theUILang.peerBan, this.isTorrentCommandEnabled('ban',this.dID) ? "theWebUI.setPeerState('ban')" : null]);
 					theContextMenu.add([theUILang.peerKick, this.isTorrentCommandEnabled('kick',this.dID) ? "theWebUI.setPeerState('kick')" : null]);
-		   			if(selCount > 1) 
+		   			if(selCount > 1)
 	   				{
 						theContextMenu.add([theUILang.peerSnub, this.isTorrentCommandEnabled('snub',this.dID) ? "theWebUI.setPeerState('snub')" : null]);
 						theContextMenu.add([theUILang.peerUnsnub, this.isTorrentCommandEnabled('unsnub',this.dID) ? "theWebUI.setPeerState('unsnub')" : null]);
 					}
 					else if (this.peers[id])
 	                {
-      					if(!this.peers[id].snubbed) 
+      					if(!this.peers[id].snubbed)
       						theContextMenu.add([theUILang.peerSnub, this.isTorrentCommandEnabled('snub',this.dID) ? "theWebUI.setPeerState('snub')" : null]);
 						else
 							theContextMenu.add([theUILang.peerUnsnub, this.isTorrentCommandEnabled('unsnub',this.dID) ? "theWebUI.setPeerState('unsnub')" : null]);
@@ -939,7 +965,7 @@ var theWebUI =
 			}
 			if(selCount)
 			{
-				theContextMenu.add([theUILang.peerDetails, (selCount > 1) ? null : "theWebUI.getTable('prs').ondblclick({ id: '"+id+"'})"]); 
+				theContextMenu.add([theUILang.peerDetails, (selCount > 1) ? null : "theWebUI.getTable('prs').ondblclick({ id: '"+id+"'})"]);
 			}
 		}
 		return(ret);
@@ -958,7 +984,7 @@ var theWebUI =
 			(/(http|https|udp):\/\/[a-z0-9-\.]+\.[a-z]{2,253}((:(\d){2,5})|)\/.*[0-9a-z]{8,32}\/a/i).test(url) ? 1 : 0 );
 	},
 
-   	trkSelect: function(e, id) 
+   	trkSelect: function(e, id)
 	{
 		if($type(id))
 		{
@@ -969,26 +995,26 @@ var theWebUI =
 		}
    	},
 
-   	getTrackers: function(hash) 
+   	getTrackers: function(hash)
 	{
       		this.request("?action=gettrackers&hash=" + hash, [this.addTrackers, this]);
    	},
 
-	getAllTrackers: function(arr) 
+	getAllTrackers: function(arr)
 	{
 		var req = "?action=getalltrackers";
 		for(var i=0; i<arr.length; i++)
 			req+=("&hash=" + arr[i]);
-		if(arr.length)	
+		if(arr.length)
 	      		this.request(req, [this.addTrackers, this]);
    	},
 
-	addTrackers: function(data) 
+	addTrackers: function(data)
 	{
    		var table = this.getTable("trk");
 		$.each(data,function(hash,trk)
 		{
-			for(var i = 0; i < trk.length; i++)			
+			for(var i = 0; i < trk.length; i++)
 			{
 				trk[i].private = theWebUI.trkIsPrivate(trk[i].name);
 				if(theWebUI.dID == hash)
@@ -996,26 +1022,26 @@ var theWebUI =
 					var sId = hash + "_t_" + i;
         	 			if(!$type(table.rowdata[sId]) )
             					table.addRowById(trk[i], sId, trk[i].icon, trk[i].attr);
-        	 			else 
+        	 			else
          				{
-            					for(var j in trk[i]) 
+            					for(var j in trk[i])
         	       					table.setValueById(sId, j, trk[i][j]);
 						table.setIcon(sId,trk[i].icon);
 						table.setAttr(sId,trk[i].attr);
 	            			}
 					trk[i]._updated = true;
-	        	 		$('#'+sId+" > .stable-TrackerList-col-0").css( "font-weight", 
+	        	 		$('#'+sId+" > .stable-TrackerList-col-0").css( "font-weight",
 			        	 	($type(theWebUI.torrents[hash]) && (i==theWebUI.torrents[hash].tracker_focus)) ? "bold" : "normal" );
         	 		}
 			}
 	   	});
    		$.extend(this.trackers,data);
 	   	var rowIDs = table.rowIDs.slice(0);
-		for(var i in rowIDs) 
+		for(var i in rowIDs)
 		{
 			var arr = rowIDs[i].split('_t_');
 			var hash = arr[0];
-			if(this.dID != hash) 
+			if(this.dID != hash)
          			table.removeRow(rowIDs[i]);
          		else
          		{
@@ -1039,24 +1065,24 @@ var theWebUI =
 
    	createTrackerMenu : function(e, ind)
 	{
-   		if(e.which!=3) 
+   		if(e.which!=3)
       			return(false);
    		theContextMenu.clear();
    		if( this.dID && $type(this.trackers[this.dID]) )
    		{
-	   		if(this.getTable("trk").selCount > 1) 
+	   		if(this.getTable("trk").selCount > 1)
    			{
       				theContextMenu.add([theUILang.EnableTracker, this.isTorrentCommandEnabled('trkstate',this.dID) ? "theWebUI.setTrackerState('" + this.dID + "',1)" : null]);
       				theContextMenu.add([theUILang.DisableTracker, this.isTorrentCommandEnabled('trkstate',this.dID) ? "theWebUI.setTrackerState('" + this.dID + "',0)" : null]);
 	      		}
-   			else 
+   			else
    			{
-      				if(this.trackers[this.dID][ind].enabled == 0) 
+      				if(this.trackers[this.dID][ind].enabled == 0)
 	      			{
       					theContextMenu.add([theUILang.EnableTracker, this.isTorrentCommandEnabled('trkstate',this.dID) ? "theWebUI.setTrackerState('" + this.dID + "',1)" : null]);
 	      				theContextMenu.add([theUILang.DisableTracker]);
          			}
-	      			else 
+	      			else
       				{
 	      				theContextMenu.add([theUILang.EnableTracker]);
       					theContextMenu.add([theUILang.DisableTracker, this.isTorrentCommandEnabled('trkstate',this.dID) ? "theWebUI.setTrackerState('" + this.dID + "',0)" : null]);
@@ -1071,25 +1097,25 @@ var theWebUI =
 		return(true);
    	},
 
-	setTrackerState: function(id, swtch) 
+	setTrackerState: function(id, swtch)
 	{
    		var trk = this.getTrackerIds(id, swtch);
    		this.request("?action=settrackerstate&hash=" + id + "&p=" + swtch + trk);
    	},
 
-	getTrackerIds: function(id, swtch) 
+	getTrackerIds: function(id, swtch)
 	{
 		var table = this.getTable("trk");
    		var sr = table.rowSel;
    		var str = "";
    		var needSort = false;
-   		for(var k in sr) 
+   		for(var k in sr)
    		{
-      			if(sr[k]) 
+      			if(sr[k])
       			{
 				var arr = k.split('_t_');
          			var i = iv(arr[1]);
-         			if(this.trackers[id][i].enabled != swtch) 
+         			if(this.trackers[id][i].enabled != swtch)
          			{
             				str += "&f=" + i;
             				this.trackers[id][i].enabled = swtch;
@@ -1107,7 +1133,7 @@ var theWebUI =
 // files
 //
 
-	updateFiles: function(hash) 
+	updateFiles: function(hash)
 	{
 	        if(this.dID == hash)
 	        {
@@ -1116,23 +1142,23 @@ var theWebUI =
 		}
    	},
 
-	redrawFiles: function(hash) 
+	redrawFiles: function(hash)
 	{
-		if(this.dID == hash) 
+		if(this.dID == hash)
       		{
 	      		var table = this.getTable("fls");
-	      		for(var i in this.files[hash]) 
+	      		for(var i in this.files[hash])
       			{
        				var sId = hash + "_f_" + i;
        				var file = this.files[hash][i];
        				file.percent = (file.size > 0) ? theConverter.round((file.done/file.size)*100,1): "100.0";
          			if(this.settings["webui.fls.view"])
          			{
-					if(!$type(table.rowdata[sId])) 
+					if(!$type(table.rowdata[sId]))
         	          			table.addRowById(file, sId, file.icon, file.attr);
             				else
             				{
-	            				for(var j in file) 
+	            				for(var j in file)
                						table.setValueById(sId, j, file[j]);
 						table.setIcon(sId,file.icon);
 						table.setAttr(sId,file.attr);
@@ -1148,27 +1174,27 @@ var theWebUI =
 			if(!this.settings["webui.fls.view"] && this.dirs[hash])
 			{
 				var dir = this.dirs[hash].getDirectory();
-				for(var i in dir) 
+				for(var i in dir)
 				{
 					var entry = dir[i];
 					if(entry.link!=null)
 					{
-						if(!$type(table.rowdata[i])) 
+						if(!$type(table.rowdata[i]))
 						        table.addRowById(entry.data, i, entry.icon, {link : entry.link});
 						else
-	            					for(var j in entry.data) 
+	            					for(var j in entry.data)
                							table.setValueById(i, j, entry.data[j]);
 					}
 				}
-				for(var i in dir) 
+				for(var i in dir)
 				{
 					var entry = dir[i];
 					if(entry.link==null)
 					{
-						if(!$type(table.rowdata[i])) 
+						if(!$type(table.rowdata[i]))
 						        table.addRowById(entry.data, i, entry.icon, {link : null});
 						else
-	            					for(var j in entry.data) 
+	            					for(var j in entry.data)
                							table.setValueById(i, j, entry.data[j]);
 					}
 				}
@@ -1177,7 +1203,7 @@ var theWebUI =
        	 	}
 	},
 
-	getFiles: function(hash, isUpdate) 
+	getFiles: function(hash, isUpdate)
 	{
 		var table = this.getTable("fls");
    		if(!isUpdate)
@@ -1187,9 +1213,9 @@ var theWebUI =
       			$(table.bpad).height(0);
        			table.clearRows();
       		}
-   		if($type(this.files[hash]) && !isUpdate) 
+   		if($type(this.files[hash]) && !isUpdate)
       			this.redrawFiles(hash);
-   		else 
+   		else
    		{
       			if(!$type(this.files[hash]))
          			this.files[hash] = new Array(0);
@@ -1197,14 +1223,14 @@ var theWebUI =
       		}
    	},
 
-	addFiles: function(data) 
+	addFiles: function(data)
 	{
 		$.extend(this.files,data);
 		for( var hash in data )
 	      		this.redrawFiles(hash);
    	},
 
-	flsSelect: function(e, id) 
+	flsSelect: function(e, id)
 	{
 		if($type(id))
 		{
@@ -1221,22 +1247,22 @@ var theWebUI =
 		}
    	},
 
-	createFileMenu: function(e, p) 
+	createFileMenu: function(e, p)
 	{
-   		if(e.which!=3) 
+   		if(e.which!=3)
       			return(false);
    		var id = this.dID;
    		theContextMenu.clear();
 		var _bf = [];
 		var table = this.getTable("fls");
-		if(table.selCount > 1) 
+		if(table.selCount > 1)
    		{
       			_bf.push([theUILang.High_priority, "theWebUI.setPriority('" + id + "',2)"]);
 			_bf.push([theUILang.Normal_priority, "theWebUI.setPriority('" + id + "',1)"]);
 			_bf.push([CMENU_SEP]);
 			_bf.push([theUILang.Dont_download, "theWebUI.setPriority('" + id + "',0)"]);
 		}
-   		else 
+   		else
 	   		if(p!=null)
    			{
    			       	_bf.push([theUILang.High_priority, (p.priority == 2) ? null : "theWebUI.setPriority('" + id + "',2)"]);
@@ -1252,14 +1278,14 @@ var theWebUI =
 		if(theWebUI.systemInfo.rTorrent.iVersion>=0x809)
 		{
 			_bf = [];
-			if(table.selCount > 1) 
+			if(table.selCount > 1)
    			{
 				_bf.push([theUILang.prioritizeNormal, "theWebUI.setPrioritize('" + id + "',0)"]);
 				_bf.push([CMENU_SEP]);
       				_bf.push([theUILang.prioritizeFirst, "theWebUI.setPrioritize('" + id + "',1)"]);
 				_bf.push([theUILang.prioritizeLast, "theWebUI.setPrioritize('" + id + "',2)"]);
 			}
-   			else 
+   			else
 	   			if(p!=null)
 	   			{
 					_bf.push([theUILang.prioritizeNormal, !p.prioritize ? null : "theWebUI.setPrioritize('" + id + "',0)"]);
@@ -1287,23 +1313,23 @@ var theWebUI =
 		return(true);
    	},
 
-	toggleFileView: function() 
+	toggleFileView: function()
 	{
-		this.settings["webui.fls.view"] = !this.settings["webui.fls.view"];	
+		this.settings["webui.fls.view"] = !this.settings["webui.fls.view"];
 		this.getTable("fls").clearRows();
 		if(this.dID!="")
 			this.redrawFiles(this.dID);
 		this.save();
 	},
 
-	getFileIds: function(id, p, property) 
+	getFileIds: function(id, p, property)
 	{
    		var sr = this.getTable("fls").rowSel;
    		var str = "";
    		var needSort = false;
-   		for(var k in sr) 
+   		for(var k in sr)
    		{
-      			if(sr[k] == true) 
+      			if(sr[k] == true)
       			{
       				if(this.settings["webui.fls.view"])
       				{
@@ -1331,7 +1357,7 @@ var theWebUI =
    		return(str);
    	},
 
-	setPriority: function(id, p) 
+	setPriority: function(id, p)
 	{
    		var fls = this.getFileIds(id, p, "priority");
    		this.request("?action=setprio&hash=" + id + "&p=" + p + fls, [this.updateFiles, this]);
@@ -1385,29 +1411,23 @@ var theWebUI =
 		}
 	},
 
-	trtDeselect: function() 
+	trtDeselect: function()
 	{
 		var table = this.getTable("trt");
 		var sr = table.rowSel;
 		for(var k in sr)
 			sr[k] = false;
+		table.selCount = 0;
 		table.refreshRows();
 	},
 
-   	createMenu: function(e, id) 
+   	createMenu: function(e, id)
 	{
    		var table = this.getTable("trt");
-		var sr = table.rowSel;
-		var st = 0;
-		for(var k in sr)
-		{
-			if(sr[k] == true)
-				st = st + 1;
-		}
    		theContextMenu.clear();
-   		if(table.selCount > 1) 
+   		if(table.selCount > 1)
    		{
-			theContextMenu.add([CMENU_SEL, "> " + table.selCount + " torrents", "theWebUI.trtDeselect()"]);
+			theContextMenu.add([CMENU_SEL, theUILang.Torrents + ": " + table.selCount, "theWebUI.trtDeselect()"]);
 			theContextMenu.add([CMENU_SEP]);
       			theContextMenu.add([theUILang.Start, "theWebUI.start()"]);
       			theContextMenu.add([theUILang.Pause, "theWebUI.pause()"]);
@@ -1415,19 +1435,19 @@ var theWebUI =
       			theContextMenu.add([theUILang.Force_recheck, "theWebUI.recheck()"]);
 			theContextMenu.add([theUILang.peerAdd]);
    		}
-   		else 
+   		else
    		{
-			theContextMenu.add([CMENU_SEL, "> 1 torrent", "theWebUI.trtDeselect()"]);
+			theContextMenu.add([CMENU_SEL, theUILang.Torrents + ": 1", "theWebUI.trtDeselect()"]);
 			theContextMenu.add([CMENU_SEP]);
    			theContextMenu.add([theUILang.Start, this.isTorrentCommandEnabled("start",id) ? "theWebUI.start()" : null]);
    			theContextMenu.add([theUILang.Pause, (this.isTorrentCommandEnabled("pause",id) || this.isTorrentCommandEnabled("unpause",id)) ? "theWebUI.pause()" : null]);
    			theContextMenu.add([theUILang.Stop, this.isTorrentCommandEnabled("stop",id) ? "theWebUI.stop()" : null]);
 			theContextMenu.add([theUILang.Force_recheck, this.isTorrentCommandEnabled("recheck",id) ? "theWebUI.recheck()" : null]);
-			theContextMenu.add([theUILang.peerAdd, 
-				(!this.isTorrentCommandEnabled("start",id) && 
-				this.isTorrentCommandEnabled("addpeer",id) && 
-				$type(this.torrents[id]) && 
-				(this.torrents[id].private==0) && (theWebUI.systemInfo.rTorrent.iVersion>=0x804)) ? 
+			theContextMenu.add([theUILang.peerAdd,
+				(!this.isTorrentCommandEnabled("start",id) &&
+				this.isTorrentCommandEnabled("addpeer",id) &&
+				$type(this.torrents[id]) &&
+				(this.torrents[id].private==0) && (theWebUI.systemInfo.rTorrent.iVersion>=0x804)) ?
 				"theDialogManager.show('padd')"	: null]);
 		}
 		theContextMenu.add([theUILang.Recreate_files, this.isTorrentCommandEnabled("recreate",id) ? "theWebUI.recreate()" : null]);
@@ -1438,17 +1458,17 @@ var theWebUI =
 		_bf.push([theUILang.New_label, (table.selCount > 1) || this.isTorrentCommandEnabled("setlabel",id) ? "theWebUI.newLabel()" : null]);
    		_bf.push([theUILang.Remove_label, (table.selCount > 1) || this.isTorrentCommandEnabled("setlabel",id) ? "theWebUI.removeLabel()" : null]);
    		_bf.push([CMENU_SEP]);
-		for(var lbl in this.cLabels) 
+		for(var lbl in this.cLabels)
    		{
       			if((table.selCount == 1) && (this.torrents[id].label == lbl))
          			_bf.push([CMENU_SEL, lbl+" "]);
-      			else 
+      			else
          			_bf.push([lbl+" ", (table.selCount > 1) || this.isTorrentCommandEnabled("setlabel",id) ? "theWebUI.setLabel('" + addslashes(lbl) + "')" : null]);
       		}
    		theContextMenu.add([CMENU_CHILD, theUILang.Labels, _bf]);
    		theContextMenu.add([CMENU_SEP]);
    		var _c0 = [];
-		if(table.selCount > 1) 
+		if(table.selCount > 1)
 		{
 			_c0.push([theUILang.High_priority, "theWebUI.perform('dsetprio&v=3')"]);
 			_c0.push([theUILang.Normal_priority, "theWebUI.perform('dsetprio&v=2')"]);
@@ -1470,22 +1490,22 @@ var theWebUI =
    		theContextMenu.add([theUILang.Details, "theWebUI.showDetails('" + id + "')"]);
    		if((table.selCount > 1) || !this.isTorrentCommandEnabled("setprops",id))
       			theContextMenu.add([theUILang.Properties]);
-   		else 
+   		else
       			theContextMenu.add([theUILang.Properties, "theWebUI.showProperties('" + id + "')"]);
 	},
 
-   	perform: function(cmd) 
+   	perform: function(cmd)
 	{
-		if(cmd == "pause") 
+		if(cmd == "pause")
 		{
 			var hp = this.getHashes("unpause");
-			if(hp != "") 
+			if(hp != "")
 				this.request("?action=unpause" + hp);
 		}
 		var h = this.getHashes(cmd);
-		if(h != "") 
+		if(h != "")
 		{
-			if((cmd.indexOf("remove")==0) && (h.indexOf(this.dID) >- 1)) 
+			if((cmd.indexOf("remove")==0) && (h.indexOf(this.dID) >- 1))
 			{
 				this.dID = "";
 				this.clearDetails();
@@ -1503,29 +1523,29 @@ var theWebUI =
 	{
 		var ret = true;
    		var status = this.torrents[hash].state;
-		switch(act) 
+		switch(act)
 		{
-			case "start" : 
+			case "start" :
 			{
 				ret = (!(status & dStatus.started) || (status & dStatus.paused) && !(status & dStatus.checking) && !(status & dStatus.hashing));
 				break;
 			}
-			case "pause" : 
+			case "pause" :
 			{
 				ret = ((status & dStatus.started) && !(status & dStatus.paused) && !(status & dStatus.checking) && !(status & dStatus.hashing));
 				break;
 			}
-			case "unpause" : 
+			case "unpause" :
 			{
 				ret = ((status & dStatus.paused) && !(status & dStatus.checking) && !(status & dStatus.hashing));
 				break;
 			}
-			case "stop" : 
+			case "stop" :
 			{
 				ret = ((status & dStatus.started) || (status & dStatus.hashing) || (status & dStatus.checking));
 				break;
 			}
-			case "recheck" : 
+			case "recheck" :
 			{
 				ret = !(status & dStatus.checking) && !(status & dStatus.hashing);
 				break;
@@ -1534,36 +1554,36 @@ var theWebUI =
 		return(ret);
 	},
 
-	getHashes: function(act) 
+	getHashes: function(act)
 	{
 		var h = "";
 		var pos = act.indexOf('&');
 		if(pos>=0)
 			act = act.substring(0,pos);
 		var sr = this.getTable("trt").rowSel;
-		for(var k in sr) 
+		for(var k in sr)
 			if((sr[k] == true) && this.isTorrentCommandEnabled(act,k))
 				h += "&hash=" + k;
 		return(h);
 	},
 
 	start: function()
-	{	
+	{
 		this.perform("start");
 	},
 
 	pause: function()
-	{	
+	{
    		this.perform("pause");
    	},
 
 	stop: function()
-	{	
+	{
    		this.perform("stop");
    	},
 
    	updateTracker: function()
-	{	
+	{
    		this.perform("updateTracker");
    	},
 
@@ -1584,37 +1604,37 @@ var theWebUI =
 	},
 
 	doRemove: function()
-	{	
+	{
 		this.perform(this.delmode);
    	},
 
 	recheck: function()
-	{	
+	{
 		this.perform("recheck");
    	},
 
    	recreate: function()
-	{	
+	{
 		this.perform("createqueued");
    	},
 
 	getTorrents: function(qs)
-	{	
+	{
 		if(this.updTimer)
 			window.clearTimeout(this.updTimer);
 		this.timer.start();
 		if(qs != "list=1")
 			qs = "action=" + qs;
-		this.requestWithTimeout("?" + qs + "&getmsg=1", [this.addTorrents, this], 
-			function() 
-			{	 
-	   			theWebUI.timeout(); 
+		this.requestWithTimeout("?" + qs + "&getmsg=1", [this.addTorrents, this],
+			function()
+			{
+	   			theWebUI.timeout();
 				theWebUI.setInterval();
 		   	},
 			function(status,text)
-			{	 
+			{
 				theWebUI.systemInfo.rTorrent.started = false;
-	   			theWebUI.error(status,text); 
+	   			theWebUI.error(status,text);
 				if(theWebUI.settings["webui.retry_on_error"])
 					theWebUI.setInterval( iv(theWebUI.settings["webui.retry_on_error"])*1000 );
 		   	});
@@ -1653,14 +1673,14 @@ var theWebUI =
 		if(!theWebUI.systemInfo.rTorrent.started)
 		{
 			noty(theUILang.linkTorTorrentRestored,'success');
-			theWebUI.systemInfo.rTorrent.started = true;			
+			theWebUI.systemInfo.rTorrent.started = true;
 		}
    		var table = this.getTable("trt");
    		var tul = 0;
 		var tdl = 0;
 		var tArray = [];
 		var firstLoad = this.firstLoad;
-		
+
 		$.each(data.torrents,
 		/**
 		 * @param {string} hash - torrent hash
@@ -1683,7 +1703,7 @@ var theWebUI =
 			else
 			{
 				var oldTorrent = theWebUI.torrents[hash];
-				if(lbl != theWebUI.labels[hash]) 
+				if(lbl != theWebUI.labels[hash])
 				{
 					theWebUI.labels[hash] = lbl;
 					table.setAttr(hash, { label: lbl });
@@ -1704,7 +1724,7 @@ var theWebUI =
 				        if((theWebUI.dID == hash) &&
 				                (theWebUI.activeView=='FileList'))
 						theWebUI.updateFiles(hash);
-					else	
+					else
 						delete theWebUI.files[hash];
 				}
 				for( var prop in torrent)
@@ -1754,6 +1774,9 @@ var theWebUI =
 
 		$('#viewrows').text(table.viewRows + '/' + table.rows);
 
+		// Cleanup memory leaks
+		tArray = null;
+		table = null;
 		data = null;
 	},
 
@@ -1764,15 +1787,15 @@ var theWebUI =
 		this.total.speedUL = tul;
 	},
 
-	loadTorrents: function() 
+	loadTorrents: function()
 	{
 		var table = this.getTable("trt");
-		if(this.firstLoad) 
+		if(this.firstLoad)
 		{
 			this.firstLoad = false;
 			this.show();
 		}
-		else 
+		else
 		{
 			table.refreshRows();
 			table.Sort();
@@ -1822,7 +1845,7 @@ var theWebUI =
 			if(state & dStatus.started)
 			{
 				if(state & dStatus.paused)
-				{       	
+				{
 					icon = "Status_Paused";
 					status = theUILang.Pausing;
 				}
@@ -1837,19 +1860,19 @@ var theWebUI =
 		{
 			if(icon=="Status_Down")
 				icon = "Status_Error_Down";
-			else    	
+			else
 			if(icon=="Status_Up")
 				icon = "Status_Error_Up";
 			else
 				icon = "Status_Error";
 		}
-		if((completed == 1000) && (status == "")) 
+		if((completed == 1000) && (status == ""))
 		{
 			if(icon=="")
 				icon = "Status_Completed";
 			status = theUILang.Finished;
 		}
-		if((completed < 1000) && (status == "")) 
+		if((completed < 1000) && (status == ""))
 		{
 			if(icon=="")
 				icon = "Status_Incompleted";
@@ -2009,14 +2032,14 @@ var theWebUI =
 			keys.push(lbl);
 		keys.sort();
 
-		for(var i=0; i<keys.length; i++) 
+		for(var i=0; i<keys.length; i++)
 		{
 			var lbl = keys[i];
 			var lblSize = this.settings["webui.show_labelsize"] ? " ; " + theConverter.unit(s[lbl], 2) : "";
 			this.labels["-_-_-" + lbl + "-_-_-"] = c[lbl] + lblSize;
 			this.cLabels[lbl] = 1;
 			temp["-_-_-" + lbl + "-_-_-"] = true;
-			if(!$$("-_-_-" + lbl + "-_-_-")) 
+			if(!$$("-_-_-" + lbl + "-_-_-"))
 			{
 				p.append( $("<LI>").
 					attr("id","-_-_-" + lbl + "-_-_-").
@@ -2037,7 +2060,7 @@ var theWebUI =
 					actDeleted = true;
 			}
 		});
-		if(actDeleted) 
+		if(actDeleted)
 		{
 			this.switchLabel($("#plabel_cont .-_-_-all-_-_-").get(0))
 		}
@@ -2111,11 +2134,11 @@ var theWebUI =
 	 *
 	 * @param {string} lbl - label
 	 */
-	setLabel: function(lbl) 
+	setLabel: function(lbl)
 	{
 		var req = '';
    		var sr = this.getTable("trt").rowSel;
-   		for(var k in sr) 
+   		for(var k in sr)
    		{
       			if(sr[k] && (this.torrents[k].label != lbl))
       				req += ("&hash=" + k + "&s=label&v=" + encodeURIComponent(lbl));
@@ -2124,7 +2147,7 @@ var theWebUI =
 			this.request("?action=setlabel"+req+"&list=1",[this.addTorrents, this]);
 	},
 
-	removeLabel: function() 
+	removeLabel: function()
 	{
 	        this.setLabel("");
    	},
@@ -2144,15 +2167,15 @@ var theWebUI =
 		theDialogManager.show("dlgLabel");
 	},
 
-	createLabel: function() 
+	createLabel: function()
 	{
    		var lbl = $("#txtLabel").val().trim();
 		lbl = lbl.replace(/\"/g, "'");
-   		if(lbl != "") 
+   		if(lbl != "")
 		{
 	   		var sr = this.getTable("trt").rowSel;
 			var req = "";
-			for(var k in sr) 
+			for(var k in sr)
 			{
       				if(sr[k] && (this.torrents[k].label != lbl))
 	         			req+=("&hash=" + k + "&s=label&v=" + encodeURIComponent(lbl));
@@ -2251,31 +2274,31 @@ var theWebUI =
 // properties
 //
 
-   	showProperties: function(k) 
+   	showProperties: function(k)
 	{
    		this.pID = k;
    		this.request("?action=getprops&hash=" + k, [this.loadProperties, this]);
    	},
 
-	loadProperties: function(data) 
+	loadProperties: function(data)
 	{
 		$.extend(this.props, data);
    		this.updateProperties();
    	},
 
-	updateProperties: function() 
+	updateProperties: function()
 	{
    		var props = this.props[this.pID];
    		$("#prop-ulslots").val( props.ulslots );
    		$("#prop-peers_min").val( props.peers_min );
    		$("#prop-peers_max").val( props.peers_max );
    		$("#prop-tracker_numwant").val( props.tracker_numwant );
-   		if(props.pex ==- 1) 
+   		if(props.pex ==- 1)
 		{
    		        $("#prop-pex").prop("checked",false).prop("disabled",true);
 			$("#lbl_prop-pex").addClass("disabled");
 		}
-   		else 
+   		else
    		{
    			$("#prop-pex").prop("checked",(props.pex==1)).prop("disabled",false).removeClass("disabled");
 			$("#lbl_prop-pex").removeClass("disabled");
@@ -2295,11 +2318,11 @@ var theWebUI =
    		theDialogManager.show("dlgProps");
    	},
 
-	setProperties: function() 
+	setProperties: function()
 	{
    		theDialogManager.hide("dlgProps");
    		var req = '';
-   		for(var k in this.props[this.pID]) 
+   		for(var k in this.props[this.pID])
    		{
       			var v = this.props[this.pID][k];
 			var o = $("#prop-" + k);
@@ -2311,7 +2334,7 @@ var theWebUI =
 				this.props[this.pID][k] = nv;
       				req+=("&s=" + k + "&v=" + nv);
    			}
-		}	      		
+		}
          	if(req.length>0)
 	       		this.request("?action=setprops&hash=" + this.pID + req);
         },
@@ -2320,9 +2343,9 @@ var theWebUI =
 // details
 //
 
-	showDetails: function(hash, noSwitch) 
+	showDetails: function(hash, noSwitch)
 	{
-   		if(!noSwitch) 
+   		if(!noSwitch)
       			theTabs.show("gcont");
    		this.dID = hash;
    		this.getFiles(hash);
@@ -2337,7 +2360,7 @@ var theWebUI =
    		this.updateDetails();
    	},
 
-        clearDetails: function() 
+        clearDetails: function()
 	{
 		$(".det").text("");
 		this.getTable("fls").clearRows();
@@ -2345,7 +2368,7 @@ var theWebUI =
 		this.clearPeers();
 	},
 
-	updateDetails: function() 
+	updateDetails: function()
 	{
    		if((this.dID != "") && this.torrents[this.dID])
    		{
@@ -2414,10 +2437,10 @@ var theWebUI =
 		if(document.title!=newTitle)
 			document.title = newTitle;
 	        $("#stup_speed").text(ul);
-	        $("#stup_limit").text((self.total.rateUL>0 && self.total.rateUL<327625*1024) ? theConverter.speed(self.total.rateUL) : theUILang.no);
+	        $("#stup_limit").text((self.total.rateUL>0) ? theConverter.speed(self.total.rateUL) : theUILang.no);
 	        $("#stup_total").text(theConverter.unit(self.total.UL));
 	        $("#stdown_speed").text(dl);
-	        $("#stdown_limit").text((self.total.rateDL>0 && self.total.rateDL<327625*1024) ? theConverter.speed(self.total.rateDL) : theUILang.no);
+	        $("#stdown_limit").text((self.total.rateDL>0) ? theConverter.speed(self.total.rateDL) : theUILang.no);
 	        $("#stdown_total").text(theConverter.unit(self.total.DL));
 	},
 
@@ -2437,10 +2460,10 @@ var theWebUI =
 	        {
 	                theContextMenu.clear();
 	                var speeds=theWebUI.settings["webui.speedlistdl"].split(",");
-	                if(theWebUI.total.rateDL<=0 || theWebUI.total.rateDL>=327625*1024)
-	                	theContextMenu.add([CMENU_SEL,theUILang.unlimited,"theWebUI.setDLRate(327625*1024)"]);
-			else	                
-		                theContextMenu.add([theUILang.unlimited,"theWebUI.setDLRate(327625*1024)"]);
+	                if(theWebUI.total.rateDL==0)
+	                	theContextMenu.add([CMENU_SEL,theUILang.unlimited,"theWebUI.setDLRate(0)"]);
+			else
+		                theContextMenu.add([theUILang.unlimited,"theWebUI.setDLRate(0)"]);
 			theContextMenu.add([CMENU_SEP]);
 	                for(var i=0; i<speeds.length; i++)
 	                {
@@ -2461,10 +2484,10 @@ var theWebUI =
 	        {
 	                theContextMenu.clear();
 	                var speeds=theWebUI.settings["webui.speedlistul"].split(",");
-	                if(theWebUI.total.rateUL<=0 || theWebUI.total.rateUL>=327625*1024)
-	                	theContextMenu.add([CMENU_SEL,theUILang.unlimited,"theWebUI.setULRate(327625*1024)"]);
-			else	                
-		                theContextMenu.add([theUILang.unlimited,"theWebUI.setULRate(327625*1024)"]);
+	                if(theWebUI.total.rateUL==0)
+	                	theContextMenu.add([CMENU_SEL,theUILang.unlimited,"theWebUI.setULRate(0)"]);
+			else
+		                theContextMenu.add([theUILang.unlimited,"theWebUI.setULRate(0)"]);
 			theContextMenu.add([CMENU_SEP]);
 	                for(var i=0; i<speeds.length; i++)
 	                {
@@ -2494,7 +2517,7 @@ var theWebUI =
 
 	resizeTop : function( w, h )
 	{
-		this.getTable("trt").resize(w,h); 
+		this.getTable("trt").resize(w,h);
 	},
 
 	resizeBottom : function( w, h )
@@ -2545,7 +2568,7 @@ var theWebUI =
 		if(theWebUI.settings["webui.show_dets"])
 			theWebUI.resizeBottom( w, Math.floor(wh * (1 - theWebUI.settings["webui.vsplit"])) );
 		$("#HDivider").height( wh-th+2 );
-	},      	
+	},
 
 	update: function()
    	{
@@ -2559,7 +2582,7 @@ var theWebUI =
 	{
 		var r = 1 - ($("#tdetails").height() / $(window).height());
 		r = Math.floor(r * Math.pow(10, 3)) / Math.pow(10, 3);
-		if((theWebUI.settings["webui.vsplit"] != r) && (r>0) && (r<1)) 
+		if((theWebUI.settings["webui.vsplit"] != r) && (r>0) && (r<1))
 		{
 			theWebUI.settings["webui.vsplit"] = r;
 			theWebUI.save();
@@ -2613,12 +2636,12 @@ var theWebUI =
 		theWebUI.save();
 	},
 
-	showAdd: function() 
+	showAdd: function()
 	{
    		theDialogManager.toggle("tadd");
    	},
-	
-	resetInterval: function() 
+
+	resetInterval: function()
 	{
 		this.timer.stop();
 		if(this.updTimer)
@@ -2627,15 +2650,15 @@ var theWebUI =
 		this.updTimer = window.setTimeout(this.update, this.interval);
 	},
 
-	setInterval: function( force ) 
+	setInterval: function( force )
 	{
 		this.timer.stop();
 		if(force)
 			this.interval = force;
 		else
-		if(this.interval ==- 1) 
+		if(this.interval ==- 1)
 			this.interval = iv(this.settings["webui.update_interval"]) + this.timer.interval * 4;
-		else 
+		else
 			this.interval = iv((this.interval + iv(this.settings["webui.update_interval"]) + this.timer.interval * 4) / 2);
 		this.updTimer = window.setTimeout(this.update, this.interval);
    	},
@@ -2646,27 +2669,27 @@ var theWebUI =
 		this.activeView=id;
 	},
 
-	request: function(qs, onComplite, isASync) 
+	request: function(qs, onComplite, isASync)
 	{
 		this.requestWithTimeout(qs, onComplite, this.timeout, this.error, isASync);
 	},
 
-	requestWithTimeout: function(qs, onComplite, onTimeout, onError, isASync) 
+	requestWithTimeout: function(qs, onComplite, onTimeout, onError, isASync)
 	{
 		Ajax(this.url + qs, isASync, onComplite, onTimeout, onError, this.settings["webui.reqtimeout"]);
    	},
 
-	requestWithoutTimeout: function(qs, onComplite, isASync) 
+	requestWithoutTimeout: function(qs, onComplite, isASync)
 	{
 		Ajax(this.url + qs, isASync, onComplite, null, this.error, -1);
    	},
 
-   	show: function() 
+   	show: function()
    	{
    		if($("#cover").is(":visible"))
 		{
 			$("#cover").hide();
-			theWebUI.resize();
+			setTimeout(theWebUI.resize, 0);
 			theTabs.show("lcont");
 		}
    	},
@@ -2679,30 +2702,38 @@ var theWebUI =
 
    	catchErrors: function(toLog)
    	{
-   	        if(toLog)
-	   		window.onerror = function(msg, url, line) 
+		if(toLog)
+	   		window.onerror = function(msg, url, line, col, error)
 			{
-			        theWebUI.show();
+				theWebUI.show();
 				noty("JS error: [" + url + " : " + line + "] " + msg,"error");
+
+				if (error != null)
+					console.log(msg, "from", error.stack);
+
 				return true;
 			}
 		else
-			window.onerror = function(msg, url, line) 
+			window.onerror = function(msg, url, line, col, error)
 			{
 				msg = "JS error: [" + url + " : " + line + "] " + msg;
 				theWebUI.msg(msg);
 				log(msg);
+				
+				if (error != null)
+					console.log(msg, "from", error.stack);
+				
 				return true;
 			}
    	},
 
-	error: function(status,text) 
+	error: function(status,text)
 	{
 		theWebUI.show();
 		noty("Bad response from server: ("+status+") "+(text ? text : ""),"error");
 	},
 
-	timeout: function() 
+	timeout: function()
 	{
 		theWebUI.show();
 		if(!theWebUI.settings["webui.ignore_timeouts"])
@@ -2710,7 +2741,7 @@ var theWebUI =
 	}
 };
 
-$(document).ready(function() 
+$(document).ready(function()
 {
 	makeContent();
 	theContextMenu.init();
