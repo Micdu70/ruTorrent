@@ -5,12 +5,21 @@ class rCache
 {
 	protected $dir;
 
-	public function __construct( $name = '' )
+	public function __construct( $name = '', $remoteUser = false )
 	{
-		$this->dir = FileUtil::getSettingsPath().$name;
-		if(!is_dir($this->dir))
-			FileUtil::makeDirectory($this->dir);
+		if(!$remoteUser)
+		{
+			$this->dir = FileUtil::getSettingsPath().$name;
+			if(!is_dir($this->dir))
+				FileUtil::makeDirectory($this->dir);
+		}
+		else
+		{
+			$remoteUser = User::getLoginInstance();
+			$this->dir = FileUtil::getSettingsPathEx($remoteUser).$name;
+		}
 	}
+
 	public static function flock( $fp )
 	{
 		$i = 0;
@@ -22,6 +31,7 @@ class rCache
 		}
 		return(true);
 	}
+
 	public function set( $rss, $arg = null )
 	{
 		global $profileMask;
@@ -61,13 +71,14 @@ class rCache
 					flock( $fp, LOCK_UN );
         				fclose( $fp );
         				unlink( $name.'.tmp' );
-				}	        			
+				}
 	        	}
 	        	else
 		        	fclose( $fp );
 		}
 	        return(false);
 	}
+
 	public function get( &$rss )
 	{
 	        $fname = $this->getName($rss);
@@ -77,13 +88,13 @@ class rCache
 			$tmp = unserialize($ret);
 			if(is_array($tmp))
 			{
-			        $rss = $tmp;				
+			        $rss = $tmp;
 				$ret = true;
 			}
 			else
 			{
-				if(($tmp!==false) && 
-					(!isset($rss->version) || 
+				if(($tmp!==false) &&
+					(!isset($rss->version) ||
 					(isset($rss->version) && !isset($tmp->version)) ||
 					(isset($tmp->version) && ($tmp->version==$rss->version))))
 				{
@@ -97,18 +108,20 @@ class rCache
         	}
 		return($ret);
 	}
+
 	public function remove( $rss )
 	{
 		return(@unlink($this->getName($rss)));
 	}
+
 	protected function getName($rss)
 	{
 	        return($this->dir."/".(is_object($rss) ? $rss->hash : $rss['__hash__']));
 	}
+
 	public function getModified( $obj = null )
 	{
-		return(filemtime( is_null($obj) ? $this->dir : 
+		return(filemtime( is_null($obj) ? $this->dir :
 			(is_object($obj) ? $this->getName($obj) : $this->dir."/".$obj) ));
-			
 	}
 }

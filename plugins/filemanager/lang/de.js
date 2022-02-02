@@ -12,9 +12,9 @@ theUILang.fExtracth		= 'Hierher entpacken';
 theUILang.fcheckSFV		= 'Prüfe SFV';
 theUILang.fMediaI		= 'MediaInfo';
 theUILang.fView		= 'Betrachten';
-theUILang.fcreate		= 'Erstelle';
+theUILang.fcreate		= 'Erstellen';
 theUILang.fcNewDir		= 'Neues Verzeichnis';
-theUILang.fcNewArchive = 'Neues Archiv';
+theUILang.fcNewArchive	= 'neues Archiv';
 theUILang.fcNewTor		= '.torrent Datei';
 theUILang.fcSFV		= 'SFV erstellen...';
 theUILang.fcScreens 		= 'Screenshots';
@@ -44,14 +44,17 @@ theUILang.fErrMsg[20]	= 'Kommando töten fehlgeschlagen';
 theUILang.fErrMsg[21]	= 'Aktion beendet';
 theUILang.fErrMsg[22]	= 'Nichts um damit zu arbeiten';
 theUILang.fErrMsg[23]	= 'Aktion fehlgeschlagen';
+theUILang.fErrMsg[24]	= 'Archiv Manipulation deaktiviert (Anwendung nicht gefunden)';
 
 
 
-
-theUILang.fDiagmkdir		= 'Erstelle neues Verzeichnis';
+theUILang.flm_popup_mkdir		= 'Erstelle neues Verzeichnis';
+theUILang.flm_popup_mkdir_cpath = 'Inside path:';
+theUILang.flm_popup_mkdir_new 	= 'New Folder';
 theUILang.fDiagndirname	= 'Verzeichnis Name';
-theUILang.fDiagnodirname 	= 'Bitte Namen des Verzeichnisses eingeben!';
-theUILang.fDiagRename 	= 'Datei/Verzeichnis umbenennen';
+theUILang.fDiagnodirname 	= 'Bitte Verzeichnisnamen eingeben!';
+theUILang.flm_popup_permissions = 'Permissions';
+theUILang.flm_popup_rename 	= 'Datei/Verzeichnis umbenennen';
 theUILang.fDiagRenameTo 	= 'Umbenennen zu:';
 theUILang.fDiagRenameBut	= 'Umbenennen';
 theUILang.fDiagRenameEmpty	= 'Neuen Namen eingeben';
@@ -66,53 +69,53 @@ theUILang.fDiagTo		= 'Zu:';
 theUILang.fDiagNoPath	= 'Zielverzeichnis nicht gestattet';
 
 
-theUILang.fDiagDelete	= 'Lösche Datei und Verzeichnis';
+theUILang.flm_popup_delete	= 'Lösche Datei und Verzeichnis';
 theUILang.fDiagDeleteSel	= 'Dateien markiert zum Löschen:';
 theUILang.fDiagDeleteBut	= 'Löschen';
 
-theUILang.fDiagConsole	= 'Konsole';
+theUILang.flm_popup_console	= 'Konsole';
 
-theUILang.fDiagMove		= 'Verschiebe Datein und Verzeichnis';
+theUILang.flm_popup_move		= 'Verschiebe Datein und Verzeichnis';
 theUILang.fDiagMoveSel	= 'Dateien markiert zum Verschieben:';
 theUILang.fDiagMoveTo	= 'Verschieben Dateien nach:';
 theUILang.fDiagMoveEmpty	= 'Bitte wählen Sie das Zielverzeichnis';
 theUILang.fDiagMoveFalse	= 'Pfad nicht gestattet';
 
-theUILang.fDiagCopy		= 'Kopiere Dateien und Ordner';
+theUILang.flm_popup_copy		= 'Kopiere Dateien und Ordner';
 theUILang.fDiagCopySel	= 'Dateien markiert zum Kopieren:';
 theUILang.fDiagCopyTo	= 'Kopiere Dateien nach:';
 
-theUILang.fDiagNFO		= '.NFO Viewer';
-theUILang.fDiagSFVCheck	= 'Datei überprüfen';
+theUILang.flm_popup_nfo_view		= 'Text File Viewer';
+theUILang.flm_popup_sfv_check	= 'Datei überprüfen';
 theUILang.fDiagSFVCheckf	= 'Prüfsumme der Datei:';
 
-theUILang.fDiagSFVCreate	= 'Erstelle SFV-Datei';
+theUILang.flm_popup_sfv_create	= 'Erstelle SFV-Datei';
 theUILang.fDiagSFVCreateSel	= 'Datei markiert zum Prüfen:';
 theUILang.fDiagSFVHashfile	= 'Speichere SFV-Datei nach:';
 
 theUILang.fDiagSFVempty	= 'Benenne die SFV-Datei';
 
-theUILang.fDiagCArchive	= 'Erstelle Archiv';
+theUILang.flm_popup_archive	= 'Erstelle Archiv';
+theUILang.fDiagOptions		= 'Options:';
 theUILang.fDiagCArchType	= 'Typ:';
 theUILang.fDiagCArchVsize	= 'Dateigröße (mb):';
 
-theUILang.fManArComp = []; 
+theUILang.fManArComp = {}; 
 
 // rar
-theUILang.fManArComp[0] = ['Speichern', 'Schnellste', 'Schnell', 'Normal', 'Gut', 'Beste']
-
+theUILang.fManArComp.rar = ['Speichern', 'Schnellste', 'Schnell', 'Normal', 'Gut', 'Beste'];
 // zip
-theUILang.fManArComp[1] = ['Speichern', 'Schnell', 'Besser'];
+theUILang.fManArComp.zip = ['Speichern', 'Schnell', 'Besser'];
 
 // tar
-theUILang.fManArComp[2]	= theUILang.fManArComp[3] = theUILang.fManArComp[4] = ['Normal'];
+theUILang.fManArComp.tar = ['none', 'gzip', 'bzip2'];
 
 theUILang.fDiagCArchiveSel	= 'Zum Archiv hinzufügen:';
 theUILang.fDiagExtract	= 'Entpacke Archive';
 theUILang.fDiagArchive	= 'Archiv:';
 theUILang.fDiagCompression	= 'Kompression:';
-theUILang.fDiagExtDo		= 'Entpacke';
-theUILang.fDiagArchempty	= 'Bitte Namen des Archives eingeben!';
+theUILang.flm_diag_extract_button		= 'Entpacke';
+theUILang.fDiagArchempty	= 'Bitte Archivnamen eingeben!';
 
 theUILang.fStarts = { 
 	Delete: 	'Datei löschen gestartet',
@@ -122,9 +125,8 @@ theUILang.fStarts = {
 	CreateSFV:	'SFV prüfen gestartet',
 	Move:		'Datei verschieben gestartet',
 	Copy:		'Datei kopieren gestartet',
-	Screenshots: 	'Video screenshots creation started. Please wait this could take some time'
-}
-
+	Screenshots: 	'Video Screenshots erstellen gestartet. Bitte warten, das dauert eine Weile'
+};
 theUILang.fStops = { 
 	Delete: 	'Datei löschen gestoppt',
 	Extract:	'Archive entpacken gestoppt',
@@ -133,9 +135,6 @@ theUILang.fStops = {
 	CreateSFV:	'SFV prüfen gestoppt',
 	Move:		'Datei verschieben gestoppt',
 	Copy:		'Datei kopieren gestoppt',
-	Screenshots: 	'Video screenshots creation stopped'
-}
-
-
-theUILang.fDiagCopyLog		= "Copy text";
-theUILang.fDiagClearButton	= "Clear";
+	Screenshots: 	'Video Screenshots erstellen gestoppt'
+};
+thePlugins.get("filemanager").langLoaded();

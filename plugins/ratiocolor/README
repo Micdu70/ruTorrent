@@ -1,0 +1,12 @@
+
+Ratiocolor Plugin for rutorrent
+
+This plugin add colors to ratio column(s).
+
+Place all the plugin files in a directory called 'ratiocolor' in the rutorrent/plugins directory.
+
+To clone directly from this git repository, run this command in the rutorrent/plugins directory:
+
+git clone https://github.com/Micdu70/rutorrent-ratiocolor.git ratiocolor
+
+Note: It is important that the plugin directory is named 'ratiocolor' so that the supporting files are loaded correctly.

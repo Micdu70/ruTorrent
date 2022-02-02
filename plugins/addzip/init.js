@@ -21,10 +21,9 @@ var makeAddRequestZip = function(frm)
     return(true);
 }
 
-
 plugin.onLangLoaded = function()
 {
-	$(document.body).append($("<iframe name='uploadfrmzip'/>").css({visibility: "hidden"}).attr( { name: "uploadfrmzip" } ).width(0).height(0).load(function()
+	$(document.body).append($("<iframe name='uploadfrmzip'/>").css({visibility: "hidden"}).attr( { name: "uploadfrmzip" } ).width(0).height(0).on('load', function()
 	{
 		$("#torrent_zip").val("");
 		$("#add_zip").attr("disabled",false);
@@ -38,17 +37,16 @@ plugin.onLangLoaded = function()
     addtorrentdiv.append("<hr>");
 
     addtorrentdiv.append('<form target="uploadfrmzip" method="post" enctype="multipart/form-data" id="addtorrentzip" action="">' +
-                            '<label>Torrent ZIP:</label>' + 
-                            '<input id="torrent_zip" type="file" class="TextboxLarge" name="torrent_zip">' + 
+                            '<label>Torrent ZIP:</label>' +
+                            '<input id="torrent_zip" type="file" class="TextboxLarge" name="torrent_zip">' +
                             '<br>' +
-                            '<label>&nbsp;</label>' + 
-                            '<input type="submit" class="Button" value="' + theUILang.addZip + '" id="add_zip">' + 
+                            '<label>&nbsp;</label>' +
+                            '<input type="submit" class="Button" value="' + theUILang.addZip + '" id="add_zip">' +
                         '</form>');
-
 
     $('#addtorrentzip').submit(
         function() {
-            if(!$("#torrent_zip").val().match(".zip")) 
+            if(!$("#torrent_zip").val().match(".zip"))
             {
                 alert(theUILang.Not_torrent_file);
                 return(false);
@@ -59,10 +57,8 @@ plugin.onLangLoaded = function()
     );
 }
 
-
 plugin.onRemove = function()
 {
 	$('#uploadfrmzip').remove();
 	$('#addtorrentzip').remove();
 }
-

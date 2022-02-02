@@ -1,6 +1,7 @@
 plugin.description: File Manager plugin.
-plugin.author: HWK,Micdu70
-plugin.version: 0.10
+plugin.author: HWK
+plugin.version: 1.0
 rtorrent.remote: error
-rtorrent.external.error: php,pgrep
-web.external.error: unzip
+rtorrent.external.error: php,pgrep,find
+web.external.error: 7z
+plugin.dependencies: _task

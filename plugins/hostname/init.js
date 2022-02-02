@@ -146,7 +146,7 @@ if (plugin.enabled) {
 	}
 
 	plugin.config = theWebUI.config;
-	theWebUI.config = function(data) {
+	theWebUI.config = function() {
 		if (plugin.canChangeColumns()) {
 			this.tables.prs.columns.push({
 			  text : 'hostname',
@@ -154,7 +154,7 @@ if (plugin.enabled) {
 			  id: 'hostname',
 			  type : TYPE_STRING});
 		}
-		plugin.config.call(this, data);
+		plugin.config.call(this);
 		plugin.done();
 	}
 

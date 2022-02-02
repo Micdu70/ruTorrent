@@ -11,7 +11,7 @@ if(isset($_REQUEST['result']))
     {
         $message = $message.'+ " ('.$_REQUEST['added'].'/'.$_REQUEST['tot'].')"';
     }
-	cachedEcho('log('.$message.');',"text/html");
+	CachedEcho::send('log('.$message.');',"text/html");
 }
 
 $label = null;
@@ -27,29 +27,29 @@ if(isset($_REQUEST['dir_edit']))
     if(!rTorrentSettings::get()->correctDirectory($dir_edit))
     {
         $status = "";
-	    cachedEcho('log(theUILang.ZIPFailedDirectory);', "text/html");
+	    CachedEcho::send('log(theUILang.ZIPFailedDirectory);', "text/html");
     }
 }
 
 if(is_null($status) && isset($_FILES['torrent_zip']))
 {
-    $uploaded_file = getUploadsPath().'/'.$_FILES['torrent_zip']['name'];
-
-    if(pathinfo($uploaded_file,PATHINFO_EXTENSION)!="zip")
-        $uploaded_file.=".zip";
-    $uploaded_file = getUniqueFilename($uploaded_file);
-    if(!move_uploaded_file($_FILES['torrent_zip']['tmp_name'],$uploaded_file))
+    $file = $_FILES['torrent_zip'];
+    $ufile = $file['name'];
+    if(pathinfo($ufile,PATHINFO_EXTENSION)!="zip")
+       $ufile.=".zip";
+    $ufile = FileUtil::getUniqueUploadedFilename($ufile);
+    if(!move_uploaded_file($file['tmp_name'],$ufile))
     {
-	    cachedEcho('log(theUILang.ZIPErrorOpeningZip);', "text/html");
+	    CachedEcho::send('log(theUILang.ZIPErrorOpeningZip);', "text/html");
     }
 
     $zip = new ZipArchive;
-    if (!($zip->open($uploaded_file)))
+    if (!($zip->open($ufile)))
     {
-	    cachedEcho('log(theUILang.ZIPErrorOpeningZip);', "text/html");
+	    CachedEcho::send('log(theUILang.ZIPErrorOpeningZip);', "text/html");
     }
-    
-    $folderpath = getUploadsPath().'/'.pathinfo($uploaded_file, PATHINFO_FILENAME);
+
+    $folderpath = FileUtil::getUploadsPath().'/'.pathinfo($ufile, PATHINFO_FILENAME);
     mkdir($folderpath);
 
     $toadd = array();
@@ -64,7 +64,7 @@ if(is_null($status) && isset($_FILES['torrent_zip']))
         {
             $torrent_count++;
             $filename = basename($filename_zip);
-            
+
             $file_index = 1;
             while (file_exists($folderpath.'/'.$filename))
             {
@@ -73,14 +73,14 @@ if(is_null($status) && isset($_FILES['torrent_zip']))
             }
 
             array_push($toadd, $filename);
-            
-            copy("zip://".$uploaded_file.'#'.$filename_zip, $folderpath.'/'.$filename);
+
+            copy("zip://".$ufile.'#'.$filename_zip, $folderpath.'/'.$filename);
         }
     }
 
     $zip->close();
-    unlink($uploaded_file);
-    
+    unlink($ufile);
+
     foreach ($toadd as $torrent_name)
     {
         $torrent_path = $folderpath.'/'.$torrent_name;

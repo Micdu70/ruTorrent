@@ -1,0 +1,93 @@
+    <fieldset>
+        <legend>Display Settings</legend>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td>Paths history number of values:</td>
+                <td><input type="text" name="flm-settings-opt-histpath" class="Textbox num1" id="flm-settings-opt-histpath" value="{{ opts.histpath }}"/></td>
+            </tr>
+            <tr>
+                <td>Strip trailing slashes from directory names:</td>
+                <td><input type="checkbox"
+                           name="flm-settings-opt-stripdirs"
+                           id="flm-settings-opt-stripdirs"
+                           value="{{ opts.stripdirs }}"
+                           {{ (opts.stripdirs) ? 'checked': '' }}
+                    /></td>
+            </tr>
+            <tr>
+                <td>Show hidden files:</td>
+                <td><input type="checkbox" name="flm-settings-opt-showhidden" id="flm-settings-opt-showhidden"
+                            {{ (opts.showhidden) ? 'checked': '' }}
+                           value="{{ opts.showhidden }}"/></td>
+            </tr>
+            <tr>
+                <td>Clean console log automatically:</td>
+                <td><input type="checkbox" name="flm-settings-opt-cleanlog" id="flm-settings-opt-cleanlog"
+                            {{ (opts.cleanlog) ? 'checked': '' }}
+                           value="{{ opts.cleanlog }}"/></td>
+            </tr>
+            <tr>
+                <td>Permissions format:</td>
+                <td><select name="flm-settings-opt-permf" id="flm-settings-opt-permf">
+                        <option value="1"{% if opts.permf == "1" %}selected="selected"{% endif %}>Octal (0755)</option>
+                        <option value="2"{% if opts.permf == "2" %}selected="selected"{% endif %}>Symbolic (-rw)</option>
+                    </select></td>
+            </tr>
+            <tr>
+                <td>Date - Time format:</td>
+                <td><input type="text" name="flm-settings-opt-timef"
+                           class="TextboxLarge" style="width: 160px;"
+                           id="flm-settings-opt-timef"
+                           value="{{ opts.timef }}"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td><strong>%s</strong> - seconds</td>
+                            <td><strong>%m</strong> - minutes</td>
+                        </tr>
+                        <tr>
+                            <td><strong>%h</strong> - hours</td>
+                            <td><strong>%d</strong> - day</td>
+                        </tr>
+                        <tr>
+                            <td><strong>%M</strong> - month</td>
+                            <td><strong>%y </strong>- year</td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                    <table width="100%" border="0" align="right" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td>Format: <strong>%d</strong>.<strong>%M</strong>.<strong>%y</strong>
+                                <strong>%h</strong>:<strong>%m</strong>:<strong>%s</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Equals to: <strong>03</strong>.<strong>12</strong>.<strong>2011</strong> <strong>22</strong>:<strong>55</strong>:<strong>47</strong>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </fieldset>
+
+{#    <fieldset>
+        <legend>Screenshot Settings</legend>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td>Screens rows:</td>
+                <td><input type="text" name="textfield" class="Textbox num1" id="flm-settings-opt-scrows" value=""/></td>
+            </tr>
+            <tr>
+                <td>Screens columns:</td>
+                <td><input type="text" name="textfield" class="Textbox num1" id="flm-settings-opt-sccols" value=""/></td>
+            </tr>
+            <tr>
+                <td>Thumbnail width:</td>
+                <td><input type="text" name="textfield" class="Textbox num1" id="flm-settings-opt-scwidth" value=""/></td>
+            </tr>
+        </table>
+    </fieldset>#}

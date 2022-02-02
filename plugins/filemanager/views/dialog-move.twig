@@ -1,0 +1,72 @@
+{% set pathbrowse = currentPath %}
+{% set multiselect = 1 %}
+{% set multiselectFilesOnly = false %}
+{% set startButtonValue = theUILang.fDiagMoveBut %}
+
+{% extends "flm::dialog-window.twig" %}
+{% block heading %}
+    <legend>{{ theUILang.fDiagMoveSel }}</legend>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        (function (global) {
+            var dialogs = flm.ui.getDialogs();
+            var diagId = dialogs.getDialogId('window');
+
+
+            if (!flm.manager.hasOwnProperty('doMove')) {
+                // service
+                flm.manager.doMove = function (filePaths, destination) {
+
+                    destination = $.trim(destination);
+
+                    var deferred = $.Deferred();
+                    flm.manager.logConsole(theUILang.fStarts.move, filePaths.length + " files");
+
+                    if (!destination.length) {
+                        // flm.manager.logAction('copy', theUILang.fDiagInvalidname);
+                        deferred.reject('move: ' + theUILang.fDiagInvalidname);
+                        return deferred.promise();
+                    }
+
+                    if (!$type(filePaths) || filePaths.length === 0) {
+                        deferred.reject('move: ' + 'Empty paths');
+                        return deferred.promise();
+                    }
+
+                    if (!flm.utils.isValidPath(destination)) {
+                        // flm.manager.logAction('copy', theUILang.fDiagInvalidname);
+                        deferred.reject('move: ' + theUILang.fDiagInvalidname);
+                        return deferred.promise();
+                    }
+
+                    var paths = flm.manager.getFullPaths(filePaths);
+                    var cPath = flm.getCurrentPath();
+
+                    return flm.api.move(paths, destination)
+                        .then(function (result) {
+                                flm.Refresh(cPath === flm.getCurrentPath() ? cPath : destination);
+                                $(document).trigger(flm.EVENTS.move, [paths, destination]);
+                                return result;
+                            },
+                            function (response) {
+                                return response;
+                            });
+                };
+            }
+
+            dialogs.onStart(function () {
+                return flm.manager.doMove(dialogs.getCheckedList(diagId), dialogs.getTargetPath(diagId));
+            });
+
+            $(diagId + ' .flm-diag-nav-path').change(function (event) {
+
+            });
+
+        })
+        (window);
+    </script>
+{% endblock %}
+
+
