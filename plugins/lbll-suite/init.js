@@ -113,7 +113,7 @@ theWebUI.loadLabels = function(c, s)
 	walkLabelTree(lblTree, ([level, node, lbl]) => {
 		const shortLabel = '../'.repeat(level) + escapeHTML(node);
 		if (lbl in c) {
-			const lblSize = this.settings["webui.show_labelsize"] ? " ; " + theConverter.bytes(s[lbl], 2) : "";
+			const lblSize = this.settings["webui.show_labelsize"] ? " ; " + theConverter.unit(s[lbl], 2) : "";
 			this.labels["-_-_-" + lbl + "-_-_-"] = c[lbl] + lblSize;
 			this.cLabels[lbl] = 1;
 			touchedIds["-_-_-" + lbl + "-_-_-"] = true;
