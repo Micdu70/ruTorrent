@@ -5,13 +5,13 @@ $rootPath = realpath(dirname(__FILE__)."/..");
 require_once( $rootPath.'/conf/config.php' );
 
 // Automatically include only the used utility classes
-spl_autoload_register(function ($class) 
+spl_autoload_register(function ($class)
 {
 	// Remove namespaces from the classname string
 	// Important for compatibility with 3rd party plugins
 	$arr = explode('\\',$class);
 	$class = end($arr);
-	
+
 	@include_once 'utility/'. strtolower($class). '.php';
 });
 
@@ -55,7 +55,8 @@ if($conf)
 
 if(!isset($profileMask))
 	$profileMask = 0777;
-if(!isset($locale))	
+if(!isset($locale))
 	$locale = "UTF8";
+
 setlocale(LC_CTYPE, $locale, "UTF-8", "en_US.UTF-8", "en_US.UTF8");
 setlocale(LC_COLLATE, $locale, "UTF-8", "en_US.UTF-8", "en_US.UTF8");
