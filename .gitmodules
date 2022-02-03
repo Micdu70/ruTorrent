@@ -1,0 +1,30 @@
+[submodule "plugins/geoip2"]
+	path = plugins/geoip2
+	url = https://github.com/Micdu70/geoip2-rutorrent.git
+[submodule "plugins/toggle_details_button"]
+	path = plugins/toggle_details_button
+	url = https://github.com/Micdu70/plugin-toggle_details_button-ruTorrent.git
+[submodule "plugins/addzip"]
+	path = plugins/addzip
+	url = https://github.com/Micdu70/rutorrent-addzip.git
+[submodule "plugins/filemanager"]
+	path = plugins/filemanager
+	url = https://github.com/Micdu70/rutorrent-filemanager.git
+[submodule "plugins/filemanager-share"]
+	path = plugins/filemanager-share
+	url = https://github.com/Micdu70/rutorrent-filemanager-share.git
+[submodule "plugins/hostname"]
+	path = plugins/hostname
+	url = https://github.com/Micdu70/rutorrent-hostname.git
+[submodule "plugins/instantsearch"]
+	path = plugins/instantsearch
+	url = https://github.com/Micdu70/rutorrent-instantsearch.git
+[submodule "plugins/ratiocolor"]
+	path = plugins/ratiocolor
+	url = https://github.com/Micdu70/rutorrent-ratiocolor.git
+[submodule "plugins/trackerstatus"]
+	path = plugins/trackerstatus
+	url = https://github.com/Micdu70/rutorrent-trackerstatus.git
+[submodule "plugins/mobile"]
+	path = plugins/mobile
+	url = https://github.com/Micdu70/rutorrentMobile.git
