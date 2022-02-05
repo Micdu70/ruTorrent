@@ -126,6 +126,8 @@ rTorrentStub.prototype.listResponse = function(data)
 			torrent.multi_file = iv(values[33]);
 			torrent.seeds = torrent.seeds_actual + " (" + torrent.seeds_all + ")";
 			torrent.peers = torrent.peers_actual + " (" + torrent.peers_all + ")";
+			if(!torrent.save_path)
+				theWebUI.request( "?action=getsavepath&hash=" + hash );
 			$.each( theRequestManager.trt.handlers, function(i,handler)
 			{
 		        	if(handler)
@@ -138,6 +140,19 @@ rTorrentStub.prototype.listResponse = function(data)
 		return( ret );
 	}
 	return(plugin.origlistResponse.call(this,data));
+}
+
+rTorrentStub.prototype.getsavepath = function()
+{
+	var cmd = new rXMLRPCCommand( "d.open" );
+	cmd.addParameter( "string", this.hashes[0] );
+	this.commands.push( cmd );
+	cmd = new rXMLRPCCommand( "d.get_base_path" );
+	cmd.addParameter( "string", this.hashes[0] );
+	this.commands.push( cmd );
+	cmd = new rXMLRPCCommand( "d.close" );
+	cmd.addParameter( "string", this.hashes[0] );
+	this.commands.push( cmd );
 }
 
 rTorrentStub.prototype.getCommon = function(cmd)
