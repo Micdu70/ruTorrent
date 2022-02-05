@@ -1141,7 +1141,7 @@ rTorrentStub.prototype.listResponse = function(xml)
 		torrent.seeds = torrent.seeds_actual + " (" + torrent.seeds_all + ")";
 		torrent.peers = torrent.peers_actual + " (" + torrent.peers_all + ")";
 		var hash = this.getValue(values,0);
-		if(!torrent.save_path)
+		if(!torrent.save_path.length) // torrent is not open
 			theWebUI.request( "?action=getsavepath&hash=" + hash );
 		$.each( theRequestManager.trt.handlers, function(i,handler)
 		{
