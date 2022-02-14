@@ -9,8 +9,6 @@
 #meter-cpu-holder { width: 100px; height: 16px; line-height: 16px; border-right: none; margin-left: 0px;padding-left: 25px;background: url(./images/status_icons.png) no-repeat 3px -320px; }
 #meter-cpu-td {}
 
-div.graph_tab {color:#282828;border-color: #000;}
-
 .lf li input.TextboxFocus { background-color: transparent; color: #009DDD }
 
 .cCell {

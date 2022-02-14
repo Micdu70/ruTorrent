@@ -428,6 +428,9 @@ div#CatList ul li.sel {
     padding: 2px 28px;
     text-shadow: none;
 }
+span.label-count,span.label-size {
+    background-color: #181818;
+}
 .-_-_-all-_-_-,
 #-_-_-all-_-_- {
     background-position: 4px -300px;
@@ -503,9 +506,16 @@ div#gcont table {
 }
 div.graph_tab {
     color: #aaa;
-    border-color: #2a2a2a;
     background-color: #222;
-    top: -2px;
+}
+.graph_tab_legend {
+    color: #aaa;
+    background-color: #222;
+}
+.graph_tab_tooltip {
+    color: #aaa;
+    background-color: #606060;
+    border: 1px solid #606060;
 }
 div.table_tab {
     background-color: #222;
@@ -527,7 +537,6 @@ div#FileList, div#TrackerList, div#PeerList, div#Speed {
 div#stg {
     background-color: #2a2a2a;
     box-shadow: 10px 10px 5px #111;
-  height: 425px;
 }
 .lm li {
 	background: transparent url("./images/bul.gif") no-repeat scroll left center;
@@ -553,7 +562,6 @@ div#stg {
 }
 .stg_con {
 	background-color: #2a2a2a;
-	height: 350px;
 	overflow: hidden;
 }
 #st_btns {
@@ -739,7 +747,6 @@ div#stg-header {
 div#stg .lm {
   background-color: #1a1a1a;
   border: 1px solid #333;
-  height: 350px;
 }
 .lm li {
 	line-height: 18px !important;

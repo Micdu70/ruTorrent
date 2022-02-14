@@ -481,6 +481,11 @@ div#CatList ul li.sel
 	transition:all .3s cubic-bezier(0.68,-0.55,0.27,1.55) 0
 }
 
+span.label-count,span.label-size
+{
+	background-color:#181818
+}
+
 .-_-_-all-_-_-,#-_-_-all-_-_-
 {
 	background-position:4px -175px
@@ -593,8 +598,20 @@ div#gcont table
 div.graph_tab
 {
 	color:#FFF;
-	border-color:#000;
 	background-color:#181818
+}
+
+.graph_tab_legend
+{
+	color:#FFF;
+	background-color:#181818
+}
+
+.graph_tab_tooltip
+{
+	color:#FFF;
+	background-color:#606060;
+	border:1px solid #606060
 }
 
 div.table_tab

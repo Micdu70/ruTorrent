@@ -62,11 +62,6 @@
   height: 16px;
   line-height: 18px;
 } 
-
-div.graph_tab {
-    color: #282828;
-    border-color: #000;
-}
 .lf li input.TextboxFocus {
     background-color: transparent;
     color: #009DDD

@@ -389,6 +389,9 @@ div#CatList ul li.sel {
     padding: 2px 28px;
     text-shadow: none;
 }
+span.label-count,span.label-size {
+    background-color: #181818;
+}
 .-_-_-all-_-_-,
 #-_-_-all-_-_- {
     background-position: 4px -303px;
@@ -464,9 +467,16 @@ div#gcont table {
 }
 div.graph_tab {
     color: #aaa;
-    border-color: #2a2a2a;
     background-color: #222;
-    top: -8px;
+}
+.graph_tab_legend {
+    color: #aaa;
+    background-color: #222;
+}
+.graph_tab_tooltip {
+    color: #aaa;
+    background-color: #606060;
+    border: 1px solid #606060;
 }
 div.table_tab {
     background-color: #222;
